@@ -1,0 +1,190 @@
+#cloud-config
+
+# Install additional packages on first boot. Packages
+# needed for ROOT, EUDET and EUTelesecope
+#
+# Default: none
+#
+# if packages are specified, this apt_update will be set to true
+#
+# packages may be supplied as a single package name or as a list
+# with the format [<package>, <version>] wherein the specifc
+# package version will be installed.
+packages:
+ - ElectricFence
+ - libXpm
+ - libXft
+ - libicu
+ - mesa-libGLU
+ - mesa-libGL
+ - libXmu
+ - git
+ - cmake3
+ - cern-config-users
+ - cern-linuxsupport-access
+ - rng-tools
+ - yum-utils
+ - device-mapper-persistent-data
+ - lvm2
+
+# final_message
+# default: cloud-init boot finished at $TIMESTAMP. Up $UPTIME seconds
+# this message is written by cloud-final when the system is finished
+# its first boot
+final_message: "The system is finally up, after $UPTIME seconds"
+
+# Public key for the desy CVMFS. Just in case does not able to access
+# to the server
+# And other static files for CVMFS and EOS (cms and user)
+# And the /root/.k5login file to assure the root access for the maintainer
+# Create the needed messag
+# Plus an addendum to /etc/profile in order to prepare the session
+write_files:
+  - path: "/etc/cvmfs/keys/desy.de.pub"
+    content: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3pgrEIimdCPWG9cuhQ0d
+        ZWfYxvHRz5hL4HvQlmvikLIlHxs2EApnGyAWdaHAeQ4IiY+JXQnGsS8e5Gr2cZRb
+        Y6Ya19GrjMY1wv8fc+uU9kXp7TbHpl3mSQxERG4+wqosN3+IUaPHdnWGP11idOQB
+        I0HsJ7PTRk9quFjx1ppkVITZN07+OdGBIzLK6SyDjy49IfL6DVZUH/Oc99IiXg6E
+        NDN2UecnnjDEmcvQh2UjGSQ+0NHe36ttQKEnK58GvcSj2reUEaVKLRvPcrzT9o7c
+        ugxcbkBGB3VfqSgfun8urekGEHx+vTNwu8rufBkAbQYdYCPBD3AGqSg+Kgi7i/gX
+        cwIDAQAB
+        -----END PUBLIC KEY-----
+    owner: "root:root"
+    permissions: '0644'
+  - path: "/etc/cvmfs/default.local"
+    content: |
+        CVMFS_QUOTA_LIMIT='32140'
+        CVMFS_HTTP_PROXY='http://ca-proxy.cern.ch:3128'
+        CVMFS_CACHE_BASE='/var/lib/cvmfs'
+        CVMFS_FORCE_SIGNING='yes'
+        CVMFS_REPOSITORIES='ilc.desy.de,geant4.cern.ch'
+        CVMFS_SEND_INFO_HEADER=no
+    owner: "root:root"
+    permissions: '0644'
+  - path: "/etc/cvmfs/domain.d/desy.de.conf"
+    content: |
+        CVMFS_SERVER_URL='http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@;http://cvmfs-stratum-one.cern.ch:8000/cvmfs/@fqrn@;http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@fqrn@'
+        CVMFS_KEYS_DIR=/etc/cvmfs/keys 
+    owner: "root:root"
+    permissions: '0644'
+  - path: "/etc/sysconfig/eos"
+    content: |
+        # ------------------------------------------------------------------
+        # FUSE Configuration
+        # This script was written by 
+        # /afs/cern.ch/eng/clic/software/scripts/installEOS.sh
+        # all changes will be overwritten in case the above script is run
+        # again
+        # ------------------------------------------------------------------
+
+        export EOS_FUSE_MOUNTS="user cms"
+        export EOS_FUSE_USER_KRB5CC=1
+        
+        # just normal logging
+        export EOS_FUSE_DEBUG=0
+        # not to verbose - just prints timing and errors
+        export EOS_FUSE_LOGLEVEL=5
+        # don't wast time to do parallel IO - only useful for RAIN layouts
+        export EOS_FUSE_NOPIO=1
+    owner: "root:root"
+    permissions: "0644"
+  - path: "/etc/sysconfig/eos.user"
+    content: |
+        # ------------------------------------------------------------------
+        # FUSE Configuration
+        # This script was written by 
+        # /afs/cern.ch/eng/clic/software/scripts/installEOS.sh
+        # all changes will be overwritten in case the above script is run
+        # again
+        # ------------------------------------------------------------------
+
+        # The mount directory for 'eosd' user
+        export EOS_FUSE_MOUNTDIR=/eos/user/
+        # The MGM host from where to do the inital mount
+        export EOS_FUSE_MGM_ALIAS=eosuser.cern.ch
+    owner: "root:root"
+    permissions: "0644"
+  - path: "/etc/sysconfig/eos.cms"
+    content: |
+        # ------------------------------------------------------------------
+        # FUSE Configuration
+        # This script was written by 
+        # /afs/cern.ch/eng/clic/software/scripts/installEOS.sh
+        # all changes will be overwritten in case the above script is run
+        # again
+        # ------------------------------------------------------------------
+
+        # The mount directory for 'eosd' CMS
+        export EOS_FUSE_MOUNTDIR=/eos/cms/
+        # The MGM host from where to do the inital mount
+        export EOS_FUSE_MGM_ALIAS=eoscms.cern.ch
+    owner: "root:root"
+    permissions: "0644"
+  - path: "/root/.k5login"
+    content: |
+        duarte@CERN.CH
+    owner: "root:root"
+    permissions: "0600"
+  - path: "/root/post-install.sh"
+    content: |
+        # This script must be run to update the user configuration
+        # after the creation of the instance, and after running
+        # $ openstack server set --property landb-mainuser="CMS-IT-TB-SPS" <ID>
+        # in the lxplus-cloud.cern.ch
+        cern-config-users --setup-root-mail-forward --setup-root-k5login --setup-sudo-access --setup-root-ssh-authorizedkeys --setup-user-accounts 
+        cern-linuxsupport-access enable
+        # Adding the users in the docker group
+        for _USER in `grep "/afs/cern.ch/user/" /etc/passwd|cut -d: -f1`;
+        do
+           usermod -aG docker ${_USER};
+           usermod -aG analyser ${_USER}
+        done
+    owner: "root:root"
+    permissions: "0700"
+  - path: "/tmp/profile_addendum"
+    content: |
+        # Set up CVMFS
+        eosfusebind
+        
+        # Setting up ROOT
+        # does not work this one
+        # source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc7-opt/setup.sh
+        source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc62-opt/setup.sh
+        
+        # -- The analysis directory
+        mkdir -p /home/analysis/${USER}
+        export ANPATH=/home/analysis/${USER}
+        export TB2017CERN=/eos/user/d/duarte/TestBeam2017
+        export TB2017DESY11=/eos/user/g/ggomez/TestBeamDESY2017
+        export TB2017DESY12=/eos/user/g/ggomez/TestBeam_DESY_Dec2017
+        export TB2018CERN06=/eos/user/a/agarciaa/TB_SPS_201806
+        export DOCKERPATH=/sw/repos/dockerfiles-eutelescope
+        cd $ANPATH
+        echo 
+        echo '=============================================================='
+        echo 'TEST-BEAM EUDET analysis server'
+        echo '=============================================================='
+        echo 'HOST: '$HOSTNAME
+        echo 'USER: '$USER
+        echo 'CURRENT DIRECTORY: '$CWD
+        echo 'HOME: '$HOME
+        echo '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+        echo '* Analysis  directory   ANPATH: '$(echo ${ANPATH})
+        echo '* Docker directory $DOCKERPATH:' $(echo ${DOCKERPATH})
+        echo '* Test beam data'
+        echo '   | SPS CERN June 2017:   $TB2017CERN=' $(echo ${TB2017CERN})
+        echo '   | DESY Nov. 2017      $TB2017DESY11=' $(echo ${TB2017DESY11})
+        echo '   | DESY Dec. 2017      $TB2017DESY12=' $(echo ${TB2017DESY12})
+        echo '   | SPS CERN June 2018: $TB2018CERN06=' $(echo ${TB2018CERN06})
+        echo '* Marlin framework reconstruction: Test beam data with' 
+        echo '  track reconstruction. Efficiencies and charge maps'
+        echo '* Docker analysis container:"
+        echo -e ' \033[1;32m $ cd $DOCKERPATH';\033[1;m 
+        echo -e '  \033[1:32mdocker-compose run --rm \
+                  -v,$HOME/blahblah,/home/user/analysis/$USER analysis \033[1;m'
+        echo '=============================================================='
+    owner: "root:root"
+    permissions: "0644"
+

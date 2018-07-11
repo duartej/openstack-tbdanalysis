@@ -1,0 +1,183 @@
+#!/bin/sh
+
+# Random numbers generator in virtual machines 
+# [ See https://clouddocs.web.cern.ch/clouddocs/advanced_topics/entropy.html ]
+systemctl start rngd
+
+## Mount CVMFS --> Maybe using locmap?
+## -----------------------------------------------------------------------------
+## Lines extracted from https://twiki.cern.ch/twiki/bin/view/CLIC/CLICCvmfs
+echo "***** Setting up the installation of the CVMFS client"
+yum install -y https://ecsft.cern.ch/dist/cvmfs/cvmfs-release/cvmfs-release-latest.noarch.rpm 
+yum install -y cvmfs cvmfs-config-default
+cvmfs_config setup
+# -- get public key from desy (Some issues could appear here)
+# -- Check if server available, otherwise just used the included key at
+#    config time
+wget http://grid.desy.de/etc/cvmfs/keys/desy.de.pub -O _prov_desy.de.pub
+if [ $? == 0 ]; 
+then
+    mv _prov_desy.de.pub /etc/cvmfs/keys/desy.de.pub
+fi
+
+echo "***** Checking/automounting ilc.desy.de repository, listing base folder"
+ls -ltrh /cvmfs/ilc.desy.de/
+
+cvmfs_config probe
+cvmfs_config status
+
+# -----------------------------------------------------------------------------
+# Maybe using locmap ?
+# Lines extracted from https://twiki.cern.ch/twiki/bin/view/CLIC/CLICdpEosSpace
+echo "***** Setting up the installaction of the EOS client"
+if [ "$( cat /etc/*-release | grep Carbon )" ]; then
+    OS=el-6
+    OS_NUM=6
+elif [ "$( cat /etc/*-release | grep CentOS )" ]; then
+    OS=el-7
+    OS_NUM=7
+else
+    echo "UNKNOWN OS"
+    exit 1
+fi
+
+bash -c "cat > /etc/yum.repos.d/eos.repo << EOF
+[eos-citrine]
+name=EOS 4.0 Version
+baseurl=https://dss-ci-repo.web.cern.ch/dss-ci-repo/eos/citrine/tag/${OS}/x86_64/
+gpgcheck=0
+EOF"
+
+bash -c "cat >  /etc/yum.repos.d/eos${OS_NUM}-stable.repo <<EOF
+[eos6-stable]
+gpgcheck=0
+name=EOS binaries from CERN Koji [stable]
+enabled=1
+baseurl=http://linuxsoft.cern.ch/internal/repos/eos${OS_NUM}-stable/x86_64/os
+priority=9
+EOF"
+
+yum install -y eos-fuse eos-client eos-fuse-core
+
+echo "************************************************************"
+echo "We are trying to stop the eosd service, error abort "
+echo "a failure to stop can be ignored, in case the service did   "
+echo " not exist before "
+echo "************************************************************"
+
+# -- CHECK if is present
+service eosd stop
+umount /eos/cms
+umount /eos/user
+umount /eos
+
+rmdir /eos/user
+rmdir /eos/cms
+rmdir /eos
+
+if [ -d "/eos" ]; then
+
+    echo "Failed to remove the /eos folder, something is wrong..."
+    exit 1
+
+fi
+
+echo "************************************************************"
+echo "We are trying to restart the eosd service: error, abort, or "
+echo "a failure to stop can be ignored, as long as the start is "
+echo "                       [  OK  ]"
+echo "************************************************************"
+
+service eosd start
+
+echo "***************************************************************"
+echo "STEP1: "
+echo "    Please, as a user run:"
+echo "    eosfusebind"
+echo ""
+echo "STEP2: "
+echo " eosfusebind needs to be run for every new shell, so "
+echo " add the eosfusebind command to your .bashrc or .profile file "
+echo " see: "
+echo " https://twiki.cern.ch/twiki/bin/view/CLIC/CLICdpEosSpace "                                                                            
+
+# -----------------------------------------------------------------------------
+# -- Create the analysis directory
+mkdir -p /home/analysis/
+chmod a+w /home/analysis
+
+#### -- NEW docker installation and setup 
+#yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce 
+groupadd docker
+## docker-compose installation
+sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+###
+#### Add the main users 
+for _USER in `grep "/afs/cern.ch/user/" /etc/passwd|cut -d: -f1`;
+do
+    usermod -aG docker ${_USER};
+done
+systemctl start docker
+systemctl status docker
+systemctl enable docker
+
+# -- Software installation
+useradd --no-create-home --disabled-password -s /sbin/nologin -u 1000 analyser
+
+
+mkdir /sw
+chown -R analyser:analyser /sw
+usermod -aG docker analyser
+
+# -- Download and install the dockerfiles
+cat > /sw/swinstall.sh <<EOF 
+echo 'Installing and setup dockerfiles...'
+mkdir -p /sw/repos
+cd /sw/repos
+git clone https://github.com/duartej/dockerfiles-eudaqv1
+git clone https://github.com/duartej/dockerfiles-bdaq53
+git clone https://github.com/duartej/dockerfiles-eutelescope
+# Just a trick for the code download
+HOME=/sw
+cd dockerfiles-eudaqv1
+source setup.sh
+cd /sw/repos/dockerfiles-eutelescope
+source setup.sh /sw/repos/dockerfiles-eudaqv1
+# -- EUTelescope and EUDAQ compilation
+# Create the network if not
+cd /sw/repos/dockerfiles-eudaqv1
+namec=$(docker-compose run --rm -d devcode)
+docker container stop $namec && docker container rm $namec
+# --- Compilation 
+cd /sw/repos/dockerfiles-eutelescope
+docker-compose run --rm compile
+EOF
+chown analyser:analyser /sw/swinstall.sh 
+sudo -s /bin/bash -c "/sw/swinstall.sh" analyser
+# -- Download and install the postproc-analysis
+# -- Pointing to the proper ROOT
+# This is not working yet
+#source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc7-opt/setup.sh
+#source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc62-opt/setup.sh
+###
+#### -- download and installation
+####mkdir -p /sw/src
+####cd /sw/src
+####git clone https://github.com/duartej/postproc-alibava.git
+####cd postproc-alibava
+####mkdir build
+####cd build
+####cmake3 -DCMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT=false -DCMAKE_INSTALL_PREFIX=/sw ..
+####make -j4 install 
+###
+
+# Environmental variables (just for bourne shells)
+# and setting up the shell. See the user_data_ci.txt
+# file for the creation of the profile_addendum
+cat /tmp/profile_addendum >> /etc/profile
+rm /tmp/profile_addendum
+
+
