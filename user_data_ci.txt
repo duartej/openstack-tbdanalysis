@@ -145,46 +145,52 @@ write_files:
     permissions: "0700"
   - path: "/tmp/profile_addendum"
     content: |
-        # Set up CVMFS
+        # CREATED from user-data
+        # Set up EOS
         eosfusebind
         
         # Setting up ROOT
         # does not work this one
         # source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc7-opt/setup.sh
+        echo "[CONFIG] Setting up ROOT, it could take some time depending CMVFS state"
         source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc62-opt/setup.sh
+        echo "[CONFIG] ROOT set up DONE"
         
         # -- The analysis directory
-        mkdir -p /home/analysis/${USER}
-        export ANPATH=/home/analysis/${USER}
-        export TB2017CERN=/eos/user/d/duarte/TestBeam2017
-        export TB2017DESY11=/eos/user/g/ggomez/TestBeamDESY2017
-        export TB2017DESY12=/eos/user/g/ggomez/TestBeam_DESY_Dec2017
-        export TB2018CERN06=/eos/user/a/agarciaa/TB_SPS_201806
-        export DOCKERPATH=/sw/repos/dockerfiles-eutelescope
-        cd $ANPATH
-        echo 
-        echo '=============================================================='
-        echo 'TEST-BEAM EUDET analysis server'
-        echo '=============================================================='
-        echo 'HOST: '$HOSTNAME
-        echo 'USER: '$USER
-        echo 'CURRENT DIRECTORY: '$CWD
-        echo 'HOME: '$HOME
-        echo '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-        echo '* Analysis  directory   ANPATH: '$(echo ${ANPATH})
-        echo '* Docker directory $DOCKERPATH:' $(echo ${DOCKERPATH})
-        echo '* Test beam data'
-        echo '   | SPS CERN June 2017:   $TB2017CERN=' $(echo ${TB2017CERN})
-        echo '   | DESY Nov. 2017      $TB2017DESY11=' $(echo ${TB2017DESY11})
-        echo '   | DESY Dec. 2017      $TB2017DESY12=' $(echo ${TB2017DESY12})
-        echo '   | SPS CERN June 2018: $TB2018CERN06=' $(echo ${TB2018CERN06})
-        echo '* Marlin framework reconstruction: Test beam data with' 
-        echo '  track reconstruction. Efficiencies and charge maps'
-        echo '* Docker analysis container:"
-        echo -e ' \033[1;32m $ cd $DOCKERPATH';\033[1;m 
-        echo -e '  \033[1:32mdocker-compose run --rm \
-                  -v,$HOME/blahblah,/home/user/analysis/$USER analysis \033[1;m'
-        echo '=============================================================='
+        if [[ $EUID -ne 0 ]];
+        then
+            mkdir -p /home/analysis/${USER}
+            export ANPATH=/home/analysis/${USER}
+            export TB2017CERN=/eos/user/d/duarte/TestBeam2017
+            export TB2017DESY11=/eos/user/g/ggomez/TestBeamDESY2017
+            export TB2017DESY12=/eos/user/g/ggomez/TestBeam_DESY_Dec2017
+            export TB2018CERN06=/eos/user/a/agarciaa/TB_SPS_201806
+            export DOCKERPATH=/sw/repos/dockerfiles-eutelescope
+            cd $ANPATH
+            echo 
+            echo '=============================================================='
+            echo 'TEST-BEAM EUDET analysis server'
+            echo '=============================================================='
+            echo 'HOST: '$HOSTNAME
+            echo 'USER: '$USER
+            echo 'CURRENT DIRECTORY: '$CWD
+            echo 'HOME: '$HOME
+            echo '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+            echo '* Analysis  directory   ANPATH: '$(echo ${ANPATH})
+            echo '* Docker directory $DOCKERPATH:' $(echo ${DOCKERPATH})
+            echo '* Test beam data'
+            echo '   | SPS CERN June 2017:   $TB2017CERN=' $(echo ${TB2017CERN})
+            echo '   | DESY Nov. 2017      $TB2017DESY11=' $(echo ${TB2017DESY11})
+            echo '   | DESY Dec. 2017      $TB2017DESY12=' $(echo ${TB2017DESY12})
+            echo '   | SPS CERN June 2018: $TB2018CERN06=' $(echo ${TB2018CERN06})
+            echo '* Marlin framework reconstruction: Test beam data with' 
+            echo '  track reconstruction. Efficiencies and charge maps'
+            echo '* Starting the Docker analysis container:'
+            echo -e ' \033[1;32m $ cd $DOCKERPATH;\033[1;m'
+            echo -e ' \033[1;32m $ docker-compose run --rm \
+               -v,$HOME/blahblah,/home/user/analysis/$USER analysis \033[1;m'
+            echo '=============================================================='
+        fi
     owner: "root:root"
     permissions: "0644"
 

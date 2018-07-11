@@ -124,10 +124,8 @@ systemctl start docker
 systemctl status docker
 systemctl enable docker
 
-# -- Software installation
-useradd --no-create-home --disabled-password -s /sbin/nologin -u 1000 analyser
-
-
+# -- Software installationa
+useradd --no-create-home -g analyser -p analyser -s /sbin/nologin -u 1000 analyser
 mkdir /sw
 chown -R analyser:analyser /sw
 usermod -aG docker analyser
@@ -137,26 +135,29 @@ cat > /sw/swinstall.sh <<EOF
 echo 'Installing and setup dockerfiles...'
 mkdir -p /sw/repos
 cd /sw/repos
-git clone https://github.com/duartej/dockerfiles-eudaqv1
-git clone https://github.com/duartej/dockerfiles-bdaq53
-git clone https://github.com/duartej/dockerfiles-eutelescope
+git clone https://github.com/duartej/dockerfiles-eudaqv1.git 
+git clone https://github.com/duartej/dockerfiles-bdaq53a.git
+git clone https://github.com/duartej/dockerfiles-eutelescope.git
 # Just a trick for the code download
 HOME=/sw
 cd dockerfiles-eudaqv1
 source setup.sh
-cd /sw/repos/dockerfiles-eutelescope
-source setup.sh /sw/repos/dockerfiles-eudaqv1
 # -- EUTelescope and EUDAQ compilation
 # Create the network if not
 cd /sw/repos/dockerfiles-eudaqv1
-namec=$(docker-compose run --rm -d devcode)
-docker container stop $namec && docker container rm $namec
+namec=\$(docker-compose run --rm -d devcode)
+docker container stop \$namec && docker container rm \$namec
+# And now setup the eutelescope container
+cd /sw/repos/dockerfiles-eutelescope
+source setup.sh /sw/repos/dockerfiles-eudaqv1
 # --- Compilation 
 cd /sw/repos/dockerfiles-eutelescope
 docker-compose run --rm compile
 EOF
+chmod a+w /sw/swinstall.sh
 chown analyser:analyser /sw/swinstall.sh 
-sudo -s /bin/bash -c "/sw/swinstall.sh" analyser
+cd /sw
+su -s /bin/bash -c ". swinstall.sh" analyser
 # -- Download and install the postproc-analysis
 # -- Pointing to the proper ROOT
 # This is not working yet
