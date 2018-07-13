@@ -44,9 +44,48 @@ analysis:
               source: /eos
               target: /eos
               read_only: true
+            - type: bind
+              source: /sw/repos/sps-tb-201806-eutel-cfg
+              target: /home/eudaquser/sps-tb-201806-eutel-cfg
+              read_only: true
             - ${HOME:?HOME variable unset!!}/tdba_entrypoint:/home/eudaquser/afs_gate
             - /etc/passwd:/etc/passwd
         user: ${ID}:${GROUP}
 ```
 That assures the EUTelescope software and also that the AFS (where $HOME is) and EOS (where raw data is)
 accessible to the user inside the container.
+
+## Usage Instructions
+In order to be able to access in the VM machine you have to belong to the `CMS-IT-TB-SPS`
+e-group. Using your NICE user:
+```bash
+ssh <your user>@tbdanalysis.cern.ch
+```
+### Services
+* `/afs` is mounted to store created output from `tbdanalysis`:
+   * Your home directory inside `tbdanalysis` is the same than in lxplus 
+   (see $HOME var)
+   * The first time you login in the `tbdanalysis`, the directory 
+   `$HOME/tdba_entrypoint` is created (see `analysis container` below)
+* `/eos/cms` and `/eos/user` is mounted in order to access the test beam data
+   * The eos absolute path can be found in the environment variables `TB*`.
+   Check the output of `export |grep TB`
+* A directory is created in `/home/analysis/<your user>`, don't populate it too much
+(the VM has a limited space of 160 GB), use instead AFS or/and EOS
+* Software is placed under `/sw/repos` folder
+
+#### Analysis container 
+Once logged into the `tbdanalysis` machine, you can launch the docker container
+with the needed code to perform the EUTelescope offline analysis. 
+```bash
+docker-analysis
+```
+The above command will create a container and give you a terminal inside it. `Marlin`,
+`root` and other offline analysis commands are available in there. Again, `/afs` and 
+`/eos` (`eos` in read-only mode) are available, as well. However a short-cut is created:
+* in the docker container `/home/eudaquser/afs_gate` --> `$HOME/tdba_entrypoint` accessible
+from tbdanalysis and lxplus. 
+
+The steering files from the EUTelescope processor can be found in the docker-container at:
+* `/home/eudaquser/sps-tb-201806-eutel-cfg`, but in read only mode
+

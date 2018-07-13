@@ -153,6 +153,9 @@ source setup.sh /sw/repos/dockerfiles-eudaqv1
 # --- Compilation 
 cd /sw/repos/dockerfiles-eutelescope
 docker-compose run --rm compile
+# --- The eutelescope configuration
+cd /sw/repos 
+git clone https://gitlab.cern.ch/sifca/sps-tb-201806-eutel-cfg.git
 EOF
 chmod a+w /sw/swinstall.sh
 chown analyser:analyser /sw/swinstall.sh 
