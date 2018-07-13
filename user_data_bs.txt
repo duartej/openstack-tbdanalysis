@@ -159,11 +159,6 @@ chown analyser:analyser /sw/swinstall.sh
 cd /sw
 su -s /bin/bash -c ". swinstall.sh" analyser
 # -- Download and install the postproc-analysis
-# -- Pointing to the proper ROOT
-# This is not working yet
-#source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc7-opt/setup.sh
-#source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc62-opt/setup.sh
-###
 #### -- download and installation
 ####mkdir -p /sw/src
 ####cd /sw/src

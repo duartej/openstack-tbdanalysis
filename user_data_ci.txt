@@ -159,13 +159,6 @@ write_files:
         # Set up EOS
         eosfusebind
         
-        # Setting up ROOT
-        # does not work this one
-        # source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc7-opt/setup.sh
-        echo "[CONFIG] Setting up ROOT, it could take some time depending CMVFS state"
-        source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc62-opt/setup.sh
-        echo "[CONFIG] ROOT set up DONE"
-        
         # First time entering here
         if [[ ! -d ${HOME}/tdba_entrypoint ]];
         then 
@@ -230,13 +223,6 @@ write_files:
 
         # Set up EOS
         eosfusebind
-        
-        # Setting up ROOT
-        # does not work this one
-        # source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc7-opt/setup.sh
-        echo "[CONFIG] Setting up ROOT, it could take some time depending CMVFS state"
-        source /cvmfs/sft.cern.ch/lcg/views/ROOT-latest/x86_64-centos7-gcc62-opt/setup.sh
-        echo "[CONFIG] ROOT set up DONE"
         
         # First time entering here: create the AFS entrypoint
         if ( ! -d ${HOME}/tdba_entrypoint )
