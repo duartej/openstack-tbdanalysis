@@ -26,4 +26,27 @@ $ ssh root@tbdanalysis.cern.ch
 # cd /root/
 # ./post-install.sh
 # reboot
+```
 
+## Extra configuration
+A new service for the dockerfiles-eutelescope is created for the analysis. 
+The `docker-compose.yml` file is updated with the following service:
+```yml
+analysis:
+        image: duartej/eutelescope:latest
+        depends_on:
+            - "eutelescope"
+        volumes:
+            - /afs:/afs
+            - /var/run/eosd:/var/run/eosd
+            - /tmp/krb5cc_${ID}:/tmp/krb5cc_${ID}
+            - type: bind
+              source: /eos
+              target: /eos
+              read_only: true
+            - ${HOME:?HOME variable unset!!}/tdba_entrypoint:/home/eudaquser/afs_gate
+            - /etc/passwd:/etc/passwd
+        user: ${ID}:${GROUP}
+```
+That assures the EUTelescope software and also that the AFS (where $HOME is) and EOS (where raw data is)
+accessible to the user inside the container.

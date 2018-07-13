@@ -180,5 +180,8 @@ su -s /bin/bash -c ". swinstall.sh" analyser
 # file for the creation of the profile_addendum
 cat /tmp/profile_addendum >> /etc/profile
 rm /tmp/profile_addendum
+# TCSH-like terminal
+cat /tmp/cshrc_addendum >> /etc/csh.cshrc
+rm /tmp/cshrc_addendum
 
 
