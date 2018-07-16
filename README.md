@@ -37,9 +37,9 @@ analysis:
         depends_on:
             - "eutelescope"
         volumes:
-            - /afs:/afs
             - /var/run/eosd:/var/run/eosd
             - /tmp/krb5cc_${ID}:/tmp/krb5cc_${ID}
+            - /afs:/afs
             - type: bind
               source: /eos
               target: /eos
@@ -59,8 +59,10 @@ accessible to the user inside the container.
 In order to be able to access in the VM machine you have to belong to the `CMS-IT-TB-SPS`
 e-group. Using your NICE user:
 ```bash
-ssh <your user>@tbdanalysis.cern.ch
+ssh -oGSSAPIDelegateCredentials=no` <your user>@tbdanalysis.cern.ch
 ```
+Not accepting delegated credentials will avoid having problems with the AFS
+filesystem within the docker analysis container.
 ### Services
 * `/afs` is mounted to store created output from `tbdanalysis`:
    * Your home directory inside `tbdanalysis` is the same than in lxplus 
@@ -88,4 +90,7 @@ from tbdanalysis and lxplus.
 
 The steering files from the EUTelescope processor can be found in the docker-container at:
 * `/home/eudaquser/sps-tb-201806-eutel-cfg`, but in read only mode
+
+#### Problems
+[TO BE FILLED]
 

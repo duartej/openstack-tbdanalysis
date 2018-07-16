@@ -146,6 +146,20 @@ write_files:
   - path: "/tmp/profile_addendum"
     content: |
         # CREATED from user-data
+        # Not allowing to enter with ticket delegation, to avoid problems
+        # with the docker-analysis container
+        if [[ "X"$KRB5CCNAME != "X" ]];
+        then
+            echo "********************************************************"
+            echo "Kerberos ticket delegation not allowed!"
+            echo "Connect to this machine using:         "
+            echo "$ ssh -oGSSAPIDelegateCredentials=no tbdanalysis.cern.ch"
+            echo ""
+            echo "EXITING..."
+            echo "********************************************************"
+            exit
+        fi
+
         # Check if there is a KERBEROS ticket present
         klist -s
         if [[ $? ]];
@@ -212,6 +226,18 @@ write_files:
   - path: "/tmp/cshrc_addendum"
     content: |
         # CREATED from user-data
+        # Not allowing to enter with ticket delegation, to avoid problems
+        # with the docker-analysis container
+        if ( "X"$KRB5CCNAME != "X" )
+            echo "********************************************************"
+            echo "Kerberos ticket delegation not allowed!"
+            echo "Connect to this machine using:         "
+            echo "$ ssh -oGSSAPIDelegateCredentials=no tbdanalysis.cern.ch"
+            echo ""
+            echo "EXITING..."
+            echo "********************************************************"
+            exit
+        
         # Check if there is a KERBEROS ticket present
         klist -s
         if ( $? )
