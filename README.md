@@ -59,7 +59,7 @@ accessible to the user inside the container.
 In order to be able to access in the VM machine you have to belong to the `CMS-IT-TB-SPS`
 e-group. Using your NICE user:
 ```bash
-ssh -oGSSAPIDelegateCredentials=no` <your user>@tbdanalysis.cern.ch
+ssh -oGSSAPIDelegateCredentials=no <your user>@tbdanalysis.cern.ch
 ```
 Not accepting delegated credentials will avoid having problems with the AFS
 filesystem within the docker analysis container.
