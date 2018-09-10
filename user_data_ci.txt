@@ -171,7 +171,7 @@ write_files:
             echo "[CONFIG] AFS area activated"
         fi
         # Set up EOS
-        eosfusebind
+        eosfusebind -g
         
         # First time entering here
         if [[ ! -d ${HOME}/tdba_entrypoint ]];
@@ -248,7 +248,7 @@ write_files:
             echo "[CONFIG] AFS area activated"
 
         # Set up EOS
-        eosfusebind
+        eosfusebind -g
         
         # First time entering here: create the AFS entrypoint
         if ( ! -d ${HOME}/tdba_entrypoint )
