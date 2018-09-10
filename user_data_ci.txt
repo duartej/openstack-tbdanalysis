@@ -162,7 +162,7 @@ write_files:
 
         # Check if there is a KERBEROS ticket present
         klist -s
-        if [[ $? ]];
+        if [[ $? -ne 0 ]];
         then
             echo "[CONFIG] Not kerberos ticket present (to activate your AFS area)"
             echo "[CONFIG] Creating ticket"
@@ -170,17 +170,10 @@ write_files:
             kinit ${USER}@CERN.CH
             echo "[CONFIG] AFS area activated"
         fi
+
         # Set up EOS
         eosfusebind -g
         
-        # First time entering here
-        if [[ ! -d ${HOME}/tdba_entrypoint ]];
-        then 
-            echo "[CONFIG] Creating AFS entry point for the anlysis container"
-            mkdir ${HOME}/tdba_entrypoint
-            echo "[CONFIG] '${HOME}/tdba_entrypoint' created"
-        fi
-
         # Export some needed variables
         export ID
         export GROUP=${GROUPS[0]}
@@ -193,10 +186,13 @@ write_files:
         then
             mkdir -p /home/analysis/${USER}
             export ANPATH=/home/analysis/${USER}
-            export TB2017CERN=/eos/user/d/duarte/TestBeam2017
-            export TB2017DESY11=/eos/user/g/ggomez/TestBeamDESY2017
-            export TB2017DESY12=/eos/user/g/ggomez/TestBeam_DESY_Dec2017
-            export TB2018CERN06=/eos/user/a/agarciaa/TB_SPS_201806
+            export POOL_DATA=/eos/cms/store/group/dpg_tracker_upgrade/BeamTestTelescope
+            export TB2017CERN=${POOL_DATA}/20170518-CERN_SPS-H6A
+            export TB2017DESY11=${POOL_DATA}/20171030-DESY-TB21
+            export TB2017DESY12=${POOL_DATA}/20171213-DESY-TB21
+            export TB2018CERN06=${POOL_DATA}/20180613-CERN_SPS-H6B
+            export TB2018CERN07=${POOL_DATA}/20180724-CERN_SPS-H6B
+            export TB2018CERN08=${POOL_DATA}/20180829-CERN_SPS-H2
             export DOCKERPATH=/sw/repos/dockerfiles-eutelescope
             cd $ANPATH
             echo 
@@ -205,16 +201,19 @@ write_files:
             echo '=============================================================='
             echo 'HOST: '$HOSTNAME
             echo 'USER: '$USER
-            echo 'CURRENT DIRECTORY: '$CWD
+            echo 'CURRENT DIRECTORY: '$PWD
             echo 'HOME: '$HOME
             echo '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            echo '* Analysis  directory   ANPATH: '$(echo ${ANPATH})
-            echo '* Docker directory $DOCKERPATH:' $(echo ${DOCKERPATH})
-            echo '* Test beam data'
-            echo '   | SPS CERN June 2017:   $TB2017CERN=' $(echo ${TB2017CERN})
-            echo '   | DESY Nov. 2017      $TB2017DESY11=' $(echo ${TB2017DESY11})
-            echo '   | DESY Dec. 2017      $TB2017DESY12=' $(echo ${TB2017DESY12})
-            echo '   | SPS CERN June 2018: $TB2018CERN06=' $(echo ${TB2018CERN06})
+            echo '* Analysis  directory:   ANPATH ['$(echo ${ANPATH})']'
+            echo '* Docker directory:      DOCKERPATH [' $(echo ${DOCKERPATH})']'
+            echo '* Test beam data folder: POOL_DATA ['${POOL_DATA}']'
+            echo '  Environment variables to access Test Beam data:'
+            echo '   | SPS CERN June 2017:     TB2017CERN'
+            echo '   | DESY Nov. 2017          TB2017DESY11'
+            echo '   | DESY Dec. 2017          TB2017DESY12'
+            echo '   | SPS CERN June 2018:     TB2018CERN06'
+            echo '   | SPS CERN July 2018:     TB2018CERN07'
+            echo '   | SPS CERN Aug-Sept 2018: TB2018CERN08'
             echo '* Marlin framework reconstruction: Test beam data with' 
             echo '  track reconstruction. Efficiencies and charge maps'
             echo '* Starting the Docker analysis container:'
