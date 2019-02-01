@@ -20,8 +20,6 @@ packages:
  - libXmu
  - git
  - cmake3
- - cern-config-users
- - cern-linuxsupport-access
  - rng-tools
  - yum-utils
  - device-mapper-persistent-data
@@ -33,150 +31,28 @@ packages:
 # its first boot
 final_message: "The system is finally up, after $UPTIME seconds"
 
-# Public key for the desy CVMFS. Just in case does not able to access
-# to the server
-# And other static files for CVMFS and EOS (cms and user)
-# And the /root/.k5login file to assure the root access for the maintainer
-# Create the needed messag
+# Create the needed messages
 # Plus an addendum to /etc/profile in order to prepare the session
 write_files:
-  - path: "/etc/cvmfs/keys/desy.de.pub"
-    content: |
-        -----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3pgrEIimdCPWG9cuhQ0d
-        ZWfYxvHRz5hL4HvQlmvikLIlHxs2EApnGyAWdaHAeQ4IiY+JXQnGsS8e5Gr2cZRb
-        Y6Ya19GrjMY1wv8fc+uU9kXp7TbHpl3mSQxERG4+wqosN3+IUaPHdnWGP11idOQB
-        I0HsJ7PTRk9quFjx1ppkVITZN07+OdGBIzLK6SyDjy49IfL6DVZUH/Oc99IiXg6E
-        NDN2UecnnjDEmcvQh2UjGSQ+0NHe36ttQKEnK58GvcSj2reUEaVKLRvPcrzT9o7c
-        ugxcbkBGB3VfqSgfun8urekGEHx+vTNwu8rufBkAbQYdYCPBD3AGqSg+Kgi7i/gX
-        cwIDAQAB
-        -----END PUBLIC KEY-----
-    owner: "root:root"
-    permissions: '0644'
-  - path: "/etc/cvmfs/default.local"
-    content: |
-        CVMFS_QUOTA_LIMIT='32140'
-        CVMFS_HTTP_PROXY='http://ca-proxy.cern.ch:3128'
-        CVMFS_CACHE_BASE='/var/lib/cvmfs'
-        CVMFS_FORCE_SIGNING='yes'
-        CVMFS_REPOSITORIES='ilc.desy.de,geant4.cern.ch'
-        CVMFS_SEND_INFO_HEADER=no
-    owner: "root:root"
-    permissions: '0644'
-  - path: "/etc/cvmfs/domain.d/desy.de.conf"
-    content: |
-        CVMFS_SERVER_URL='http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@;http://cvmfs-stratum-one.cern.ch:8000/cvmfs/@fqrn@;http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@fqrn@'
-        CVMFS_KEYS_DIR=/etc/cvmfs/keys 
-    owner: "root:root"
-    permissions: '0644'
-  - path: "/etc/sysconfig/eos"
-    content: |
-        # ------------------------------------------------------------------
-        # FUSE Configuration
-        # This script was written by 
-        # /afs/cern.ch/eng/clic/software/scripts/installEOS.sh
-        # all changes will be overwritten in case the above script is run
-        # again
-        # ------------------------------------------------------------------
-
-        export EOS_FUSE_MOUNTS="user cms"
-        export EOS_FUSE_USER_KRB5CC=1
-        
-        # just normal logging
-        export EOS_FUSE_DEBUG=0
-        # not to verbose - just prints timing and errors
-        export EOS_FUSE_LOGLEVEL=5
-        # don't wast time to do parallel IO - only useful for RAIN layouts
-        export EOS_FUSE_NOPIO=1
-    owner: "root:root"
-    permissions: "0644"
-  - path: "/etc/sysconfig/eos.user"
-    content: |
-        # ------------------------------------------------------------------
-        # FUSE Configuration
-        # This script was written by 
-        # /afs/cern.ch/eng/clic/software/scripts/installEOS.sh
-        # all changes will be overwritten in case the above script is run
-        # again
-        # ------------------------------------------------------------------
-
-        # The mount directory for 'eosd' user
-        export EOS_FUSE_MOUNTDIR=/eos/user/
-        # The MGM host from where to do the inital mount
-        export EOS_FUSE_MGM_ALIAS=eosuser.cern.ch
-    owner: "root:root"
-    permissions: "0644"
-  - path: "/etc/sysconfig/eos.cms"
-    content: |
-        # ------------------------------------------------------------------
-        # FUSE Configuration
-        # This script was written by 
-        # /afs/cern.ch/eng/clic/software/scripts/installEOS.sh
-        # all changes will be overwritten in case the above script is run
-        # again
-        # ------------------------------------------------------------------
-
-        # The mount directory for 'eosd' CMS
-        export EOS_FUSE_MOUNTDIR=/eos/cms/
-        # The MGM host from where to do the inital mount
-        export EOS_FUSE_MGM_ALIAS=eoscms.cern.ch
-    owner: "root:root"
-    permissions: "0644"
-  - path: "/root/.k5login"
-    content: |
-        duarte@CERN.CH
-    owner: "root:root"
-    permissions: "0600"
   - path: "/root/post-install.sh"
     content: |
-        # This script must be run to update the user configuration
-        # after the creation of the instance, and after running
-        # $ openstack server set --property landb-mainuser="CMS-IT-TB-SPS" <ID>
-        # in the lxplus-cloud.cern.ch
-        cern-config-users --setup-root-mail-forward --setup-root-k5login --setup-sudo-access --setup-root-ssh-authorizedkeys --setup-user-accounts 
-        cern-linuxsupport-access enable
         # Adding the users in the docker group
+        # And forcing to use /bin/bash shells
         for _USER in `grep "/afs/cern.ch/user/" /etc/passwd|cut -d: -f1`;
         do
            usermod -aG docker ${_USER};
-           usermod -aG analyser ${_USER}
+           usermod -aG analyser ${_USER};
+           usermod --shell /bin/bash ${_USER}
         done
     owner: "root:root"
     permissions: "0700"
   - path: "/tmp/profile_addendum"
     content: |
         # CREATED from user-data
-        # Not allowing to enter with ticket delegation, to avoid problems
-        # with the docker-analysis container
-        if [[ "X"$KRB5CCNAME != "X" ]];
-        then
-            echo "********************************************************"
-            echo "Kerberos ticket delegation not allowed!"
-            echo "Connect to this machine using:         "
-            echo "$ ssh -oGSSAPIDelegateCredentials=no tbdanalysis.cern.ch"
-            echo ""
-            echo "EXITING..."
-            echo "********************************************************"
-            exit
-        fi
-
-        # Check if there is a KERBEROS ticket present
-        klist -s
-        if [[ $? -ne 0 ]];
-        then
-            echo "[CONFIG] Not kerberos ticket present (to activate your AFS area)"
-            echo "[CONFIG] Creating ticket"
-            echo "kinit ${USER}@CERN.CH"
-            kinit ${USER}@CERN.CH
-            echo "[CONFIG] AFS area activated"
-        fi
-
-        # Set up EOS
-        eosfusebind -g
-        
+        # -----------------------
         # Export some needed variables
-        export ID
-        export GROUP=${GROUPS[0]}
+        #export ID
+        #export GROUP=${GROUPS[0]}
         
         # The alias to run the analysis container
         alias docker-analysis="cd /sw/repos/dockerfiles-eutelescope && docker-compose run --rm analysis"
@@ -184,8 +60,6 @@ write_files:
         # -- The analysis directory
         if [[ $EUID -ne 0 ]];
         then
-            mkdir -p /home/analysis/${USER}
-            export ANPATH=/home/analysis/${USER}
             export POOL_DATA=/eos/cms/store/group/dpg_tracker_upgrade/BeamTestTelescope
             export TB2017CERN=${POOL_DATA}/20170518-CERN_SPS-H6A
             export TB2017DESY11=${POOL_DATA}/20171030-DESY-TB21
@@ -193,8 +67,10 @@ write_files:
             export TB2018CERN06=${POOL_DATA}/20180613-CERN_SPS-H6B
             export TB2018CERN07=${POOL_DATA}/20180724-CERN_SPS-H6B
             export TB2018CERN08=${POOL_DATA}/20180829-CERN_SPS-H2
+            export TB2018CERN1003=${POOL_DATA}/20181003-CERN_SPS-H6B
+            export TB2018CERN1024=${POOL_DATA}/20181024-CERN_SPS-H6B
             export DOCKERPATH=/sw/repos/dockerfiles-eutelescope
-            cd $ANPATH
+            cd $HOME
             echo 
             echo '=============================================================='
             echo 'TEST-BEAM EUDET analysis server'
@@ -204,95 +80,23 @@ write_files:
             echo 'CURRENT DIRECTORY: '$PWD
             echo 'HOME: '$HOME
             echo '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            echo '* Analysis  directory:   ANPATH ['$(echo ${ANPATH})']'
             echo '* Docker directory:      DOCKERPATH [' $(echo ${DOCKERPATH})']'
             echo '* Test beam data folder: POOL_DATA ['${POOL_DATA}']'
             echo '  Environment variables to access Test Beam data:'
             echo '   | SPS CERN June 2017:     TB2017CERN'
             echo '   | DESY Nov. 2017          TB2017DESY11'
             echo '   | DESY Dec. 2017          TB2017DESY12'
-            echo '   | SPS CERN June 2018:     TB2018CERN06'
-            echo '   | SPS CERN July 2018:     TB2018CERN07'
+            echo '   | SPS CERN June  2018:    TB2018CERN06'
+            echo '   | SPS CERN July  2018:    TB2018CERN07'
             echo '   | SPS CERN Aug-Sept 2018: TB2018CERN08'
+            echo '   | SPS CERN Oct03 2018:    TB2018CERN1003'
+            echo '   | SPS CERN Oct24 2018:    TB2018CERN1024'
             echo '* Marlin framework reconstruction: Test beam data with' 
             echo '  track reconstruction. Efficiencies and charge maps'
             echo '* Starting the Docker analysis container:'
             echo -e ' \033[1;32m $ docker-analysis\033[1;m'
             echo '=============================================================='
         fi
-    owner: "root:root"
-    permissions: "0644"
-  - path: "/tmp/cshrc_addendum"
-    content: |
-        # CREATED from user-data
-        # Not allowing to enter with ticket delegation, to avoid problems
-        # with the docker-analysis container
-        if ( "X"$KRB5CCNAME != "X" )
-            echo "********************************************************"
-            echo "Kerberos ticket delegation not allowed!"
-            echo "Connect to this machine using:         "
-            echo "$ ssh -oGSSAPIDelegateCredentials=no tbdanalysis.cern.ch"
-            echo ""
-            echo "EXITING..."
-            echo "********************************************************"
-            exit
-        
-        # Check if there is a KERBEROS ticket present
-        klist -s
-        if ( $? )
-            echo "[CONFIG] Not kerberos ticket present (to activate your AFS area)"
-            echo "[CONFIG] Creating ticket"
-            echo "kinit ${USER}@CERN.CH"
-            kinit ${USER}@CERN.CH
-            echo "[CONFIG] AFS area activated"
-
-        # Set up EOS
-        eosfusebind -g
-        
-        # First time entering here: create the AFS entrypoint
-        if ( ! -d ${HOME}/tdba_entrypoint )
-            echo "[CONFIG] Creating AFS entry point for the anlysis container"
-            mkdir ${HOME}/tdba_entrypoint
-            echo "[CONFIG] '${HOME}/tdba_entrypoint' created"
-        
-        # Export some needed variables
-        setenv ID ${ID}
-        setenv GROUP ${GROUPS[0]}
-
-        # The alias to run the analysis container
-        alias docker-analysis "cd /sw/repos/dockerfiles-eutelescope && docker-compose run --rm analysis"
-        
-        # -- The analysis directory
-        if ( $EUID )
-            mkdir -p /home/analysis/${USER}
-            setenv ANPATH /home/analysis/${USER}
-            setenv TB2017CERN /eos/user/d/duarte/TestBeam2017
-            setenv TB2017DESY11 /eos/user/g/ggomez/TestBeamDESY2017
-            setenv TB2017DESY12 /eos/user/g/ggomez/TestBeam_DESY_Dec2017
-            setenv TB2018CERN06 /eos/user/a/agarciaa/TB_SPS_201806
-            setenv DOCKERPATH /sw/repos/dockerfiles-eutelescope
-            cd $ANPATH
-            echo 
-            echo '=============================================================='
-            echo 'TEST-BEAM EUDET analysis server'
-            echo '=============================================================='
-            echo 'HOST: '$HOSTNAME
-            echo 'USER: '$USER
-            echo 'CURRENT DIRECTORY: '$CWD
-            echo 'HOME: '$HOME
-            echo '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-            echo '* Analysis  directory   ANPATH: '$(echo ${ANPATH})
-            echo '* Docker directory $DOCKERPATH:' $(echo ${DOCKERPATH})
-            echo '* Test beam data'
-            echo '   | SPS CERN June 2017:   $TB2017CERN=' $(echo ${TB2017CERN})
-            echo '   | DESY Nov. 2017      $TB2017DESY11=' $(echo ${TB2017DESY11})
-            echo '   | DESY Dec. 2017      $TB2017DESY12=' $(echo ${TB2017DESY12})
-            echo '   | SPS CERN June 2018: $TB2018CERN06=' $(echo ${TB2018CERN06})
-            echo '* Marlin framework reconstruction: Test beam data with' 
-            echo '  track reconstruction. Efficiencies and charge maps'
-            echo '* Starting the Docker analysis container:'
-            echo -e ' \033[1;32m $ docker-analysis\033[1;m'
-            echo '=============================================================='
     owner: "root:root"
     permissions: "0644"
 
