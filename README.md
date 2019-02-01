@@ -10,9 +10,13 @@ Create the instance using a CC7 image (so far there is some problem with the ins
 creation using a e-group, workaround in the meantime)
 ```bash
 # Create a persistent volume using CC7 image
-$ openstack volume create --image 94f151f8-dee0-48c3-b5bd-32994fa4be66 \
+$ openstack volume create --image 65bc0185-7fba-4b08-b256-cfc7576d9dda \
     --size 160 --description "CC7 analysis software for dockerize test-beam analysis for IT-CMS upgrade" cms-it-tb 
 #  The volume id is 82d821d5-5302-4a28-bcf3-66f1c46bb49e
+# Preparing to transfer the volume to the CMS 
+$ openstack volume transfer request create cms-it-tb2
+c3041e150df5d812
+# Follow the instructions for the acceptac
 $ openstack server create --flavor m2.large --key-name lxplus \
     --volume 82d821d5-5302-4a28-bcf3-66f1c46bb49e \
     --property landb-description="TEST-BEAM EUDET type dockerized analysis server" \
