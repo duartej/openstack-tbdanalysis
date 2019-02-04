@@ -20,7 +20,7 @@ $ openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 \
     server create --flavor m2.large --key-name lxplus \
     --volume 4ecd9e52-1be1-4cc2-9b43-37989de10f5d \
     --property landb-description="TEST-BEAM EUDET type dockerized analysis server" \
-    --property landb-os="LINUX" --property landb-mainuser="duarte" \ 
+    --property landb-os="LINUX" --property landb-mainuser="CMS-IT-TB-SPS" \ 
     --user-data user_data_context_mlt.txt tbdanalysis
 # The server ID is  5eedd104-09fb-40d5-8ced-91a0f1873588
 # WORKAROUND: set e-group
