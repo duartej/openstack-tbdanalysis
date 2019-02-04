@@ -14,8 +14,10 @@ creation using a e-group, workaround in the meantime)
 $ openstack volume create --image 65bc0185-7fba-4b08-b256-cfc7576d9dda \
     --size 80 --description "CC7 analysis software for dockerize test-beam analysis for IT-CMS upgrade" cms-it-tb2 
 #  The volume id is 4ecd9e52-1be1-4cc2-9b43-37989de10f5d
+$ openstack volume transfer request 
 # Create the server  at "CMS IT Ph2 Test Beam Analysis" (project c44e1040-5691-4ea5-881c-eb9a4b4d97e6)
-$ openstack server create --flavor m2.large --key-name lxplus \
+$ openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 \ 
+    server create --flavor m2.large --key-name lxplus \
     --volume 4ecd9e52-1be1-4cc2-9b43-37989de10f5d \
     --property landb-description="TEST-BEAM EUDET type dockerized analysis server" \
     --property landb-os="LINUX" --property landb-mainuser="duarte" \ 
