@@ -99,4 +99,36 @@ write_files:
         fi
     owner: "root:root"
     permissions: "0644"
+  - path: "/bin/add_analysis_service"
+    content: |
+        #!/usr/bin/env python
+        # Modify the docker-compose in order to include the analysis
+        # service, assuming is in the VM
+        import sys
+        import yaml
+
+        # WARNING!! No error control, assuming the input file
+        # exists
+        compose_file = sys.argv[1]
+
+        with open(compose_file) as f:
+            cl = yaml.load(f)
+        # Create the analysis service
+        cl['services']['analysis'] = {'depends_on': ['eutelescope'], \ 
+              'image': 'duartej/eutelescope:latest', 'user': '${ID}:${GROUP}', \
+              'volumes': ['/var/run/eosd:/var/run/eosd', \
+                   '/tmp/krb5cc_${ID}:/tmp/krb5cc_${ID}', '/afs:/afs', \
+                   {'read_only': True, 'source': '/eos', 'type': 'bind', 'target': '/eos'}, \ 
+                   {'read_only': True, 'source': '/sw/repos/sps-tb-201806-eutel-cfg', \
+                   'type': 'bind', 'target': '/home/eudaquser/sps-tb-201806-eutel-cfg'}, 
+                   '/etc/passwd:/etc/passwd'], \
+              'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'], \
+              'privileged': 'true'
+              }
+        # The compose file modified
+        with open(compose_file,"w") as f:
+            yaml.dump(cl,f,default_flow_style=False)
+
+    owner: "root:root"
+    permissions: "0755"
 

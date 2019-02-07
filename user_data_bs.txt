@@ -4,6 +4,17 @@
 # [ See https://clouddocs.web.cern.ch/clouddocs/advanced_topics/entropy.html ]
 systemctl start rngd
 
+# -- get public key from desy
+# -- Check if server available, otherwise just used the included key at
+#    config time
+curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.de.pub
+
+# And the config?
+##--cat > /etc/cvmfs/domain.d/desy.de.conf <<EOF 
+##--CVMFS_SERVER_URL='http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@;http://cvmfs-stratum-one.cern.ch:8000/cvmfs/@fqrn@;http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@fqrn@
+##--'
+##--CVMFS_KEYS_DIR=/etc/cvmfs/keys
+##--EOF
 ## AFS --> Maybe using locmap?
 #/usr/bin/locmap --configure afs
 #/usr/bin/locmap --configure ntp
@@ -22,9 +33,10 @@ systemctl start rngd
 /usr/bin/locmap --configure eosclient
 
 # -----------------------------------------------------------------------------
-# -- Create the analysis directory
-mkdir -p /home/analysis/
-chmod a+w /home/analysis
+# User to take care of software installation
+useradd -p analyser -s /sbin/nologin --no-create-home --user-group -u 1000 analyser
+mkdir /sw
+chown -R analyser:analyser /sw
 
 #### -- NEW docker installation and setup 
 #yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -35,21 +47,19 @@ groupadd docker
 sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ###
-#### Add the main users 
+#### Add the main users in the docker group, analyser and forcing to have bash (no other one)
+usermod -aG docker analyser
 for _USER in `grep "/afs/cern.ch/user/" /etc/passwd|cut -d: -f1`;
 do
     usermod -aG docker ${_USER};
+    usermod -aG analyser ${_USER};
+    usermod --shell /bin/bash ${_USER}
 done
 systemctl start docker
 systemctl status docker
 systemctl enable docker
 
-# -- Software installationa
-useradd --no-create-home -g analyser -p analyser -s /sbin/nologin -u 1000 analyser
-mkdir /sw
-chown -R analyser:analyser /sw
-usermod -aG docker analyser
-
+# -- Software installation
 # -- Download and install the dockerfiles
 cat > /sw/swinstall.sh <<EOF 
 echo 'Installing and setup dockerfiles...'
@@ -81,6 +91,8 @@ chmod a+w /sw/swinstall.sh
 chown analyser:analyser /sw/swinstall.sh 
 cd /sw
 su -s /bin/bash -c ". swinstall.sh" analyser
+# Include the analysis service
+su -s /bin/bash -c "/bin/add_analysis_service /sw/repos/dockerfiles-eutelescope/docker-compose.yml" analyser
 # -- Download and install the postproc-analysis
 #### -- download and installation
 ####mkdir -p /sw/src
