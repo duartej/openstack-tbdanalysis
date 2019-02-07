@@ -31,6 +31,44 @@ packages:
 # its first boot
 final_message: "The system is finally up, after $UPTIME seconds"
 
+# --- Create some files: DESY cvmfs software
+# Public key for the desy CVMFS. Just in case does not able to access
+# to the server
+# And other static files for CVMFS and EOS (cms and user)
+# And the /root/.k5login file to assure the root access for the maintainer
+# Create the needed messag
+# Plus an addendum to /etc/profile in order to prepare the session
+write_files:
+  - path: "/etc/cvmfs/keys/desy.de.pub"
+    content: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3pgrEIimdCPWG9cuhQ0d
+        ZWfYxvHRz5hL4HvQlmvikLIlHxs2EApnGyAWdaHAeQ4IiY+JXQnGsS8e5Gr2cZRb
+        Y6Ya19GrjMY1wv8fc+uU9kXp7TbHpl3mSQxERG4+wqosN3+IUaPHdnWGP11idOQB
+        I0HsJ7PTRk9quFjx1ppkVITZN07+OdGBIzLK6SyDjy49IfL6DVZUH/Oc99IiXg6E
+        NDN2UecnnjDEmcvQh2UjGSQ+0NHe36ttQKEnK58GvcSj2reUEaVKLRvPcrzT9o7c
+        ugxcbkBGB3VfqSgfun8urekGEHx+vTNwu8rufBkAbQYdYCPBD3AGqSg+Kgi7i/gX
+        cwIDAQAB
+        -----END PUBLIC KEY-----
+    owner: "root:root"
+    permissions: '0644'
+  - path: "/etc/cvmfs/default.local"
+    content: |
+        CVMFS_QUOTA_LIMIT='32140'
+        CVMFS_HTTP_PROXY='http://ca-proxy.cern.ch:3128'
+        CVMFS_CACHE_BASE='/var/lib/cvmfs'
+        CVMFS_FORCE_SIGNING='yes'
+        CVMFS_REPOSITORIES='ilc.desy.de,geant4.cern.ch'
+        CVMFS_SEND_INFO_HEADER=no
+    owner: "root:root"
+    permissions: '0644'
+  - path: "/etc/cvmfs/domain.d/desy.de.conf"
+    content: |
+        CVMFS_SERVER_URL='http://grid-cvmfs-one.desy.de:8000/cvmfs/@fqrn@;http://cvmfs-stratum-one.cern.ch:8000/cvmfs/@fqrn@;http://cvmfs-egi.gridpp.rl.ac.uk:8000/cvmfs/@fqrn@'
+        CVMFS_KEYS_DIR=/etc/cvmfs/keys
+    owner: "root:root"
+    permissions: '0644'
+
 # Create the needed messages
 # Plus an addendum to /etc/profile in order to prepare the session
 write_files:
@@ -50,9 +88,20 @@ write_files:
     content: |
         # CREATED from user-data
         # -----------------------
+        # Check if there is a KERBEROS ticket present
+        klist -s
+        if [[ $? -ne 0 ]];
+        then
+            echo "[CONFIG] Not kerberos ticket present (to activate your AFS area)"
+            echo "[CONFIG] Creating ticket"
+            echo "kinit ${USER}@CERN.CH"
+            kinit ${USER}@CERN.CH
+            echo "[CONFIG] AFS area activated"
+        fi
+
         # Export some needed variables
-        #export ID
-        #export GROUP=${GROUPS[0]}
+        export ID
+        export GROUP=${GROUPS[0]}
         
         # The alias to run the analysis container
         alias docker-analysis="cd /sw/repos/dockerfiles-eutelescope && docker-compose run --rm analysis"
@@ -114,17 +163,17 @@ write_files:
         with open(compose_file) as f:
             cl = yaml.load(f)
         # Create the analysis service
-        cl['services']['analysis'] = {'depends_on': ['eutelescope'], \ 
+        cl['services']['analysis'] = {'depends_on': ['eutelescope'], \
               'image': 'duartej/eutelescope:latest', 'user': '${ID}:${GROUP}', \
               'volumes': ['/var/run/eosd:/var/run/eosd', \
                    '/tmp/krb5cc_${ID}:/tmp/krb5cc_${ID}', '/afs:/afs', \
-                   {'read_only': True, 'source': '/eos', 'type': 'bind', 'target': '/eos'}, \ 
+                   {'read_only': True, 'source': '/eos', 'type': 'bind', 'target': '/eos'}, \
                    {'read_only': True, 'source': '/sw/repos/sps-tb-201806-eutel-cfg', \
-                   'type': 'bind', 'target': '/home/eudaquser/sps-tb-201806-eutel-cfg'}, 
+                   'type': 'bind', 'target': '/home/eudaquser/sps-tb-201806-eutel-cfg'}, \
                    '/etc/passwd:/etc/passwd'], \
-              'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'], \
-              'privileged': 'true'
-              }
+                'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'], \
+                'privileged': 'true' \
+            }
         # The compose file modified
         with open(compose_file,"w") as f:
             yaml.dump(cl,f,default_flow_style=False)
