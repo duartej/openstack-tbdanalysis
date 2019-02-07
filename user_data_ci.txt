@@ -68,10 +68,6 @@ write_files:
         CVMFS_KEYS_DIR=/etc/cvmfs/keys
     owner: "root:root"
     permissions: '0644'
-
-# Create the needed messages
-# Plus an addendum to /etc/profile in order to prepare the session
-write_files:
   - path: "/root/post-install.sh"
     content: |
         # Adding the users in the docker group
