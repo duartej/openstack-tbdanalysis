@@ -95,6 +95,9 @@ write_files:
             echo "[CONFIG] AFS area activated"
         fi
 
+        # Associate to the current credentials EOS
+        eosfusebind -g
+
         # Export some needed variables
         export ID
         export GROUP=${GROUPS[0]}
@@ -159,7 +162,7 @@ write_files:
         with open(compose_file) as f:
             cl = yaml.load(f)
         # Create the analysis service
-        cl['services']['analysis'] = {'depends_on': ['eutelescope'], \
+        cl['services']['analysis'] = {'depends_on': ['"eutelescope"'], \
               'image': 'duartej/eutelescope:latest', 'user': '${ID}:${GROUP}', \
               'volumes': ['/var/run/eosd:/var/run/eosd', \
                    '/tmp/krb5cc_${ID}:/tmp/krb5cc_${ID}', '/afs:/afs', \
@@ -168,7 +171,7 @@ write_files:
                    'type': 'bind', 'target': '/home/eudaquser/sps-tb-201806-eutel-cfg'}, \
                    '/etc/passwd:/etc/passwd'], \
                 'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'], \
-                'privileged': 'true' \
+                'privileged': True \
             }
         # The compose file modified
         with open(compose_file,"w") as f:

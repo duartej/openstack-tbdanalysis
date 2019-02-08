@@ -12,7 +12,7 @@ resources:
             resource_def:
                 type: OS::Nova::Server
                 properties:
-                    name: "cmsit-tba%index%"
+                    name: "cmsit-tba0%index%"
                     key_name: lxplus
                     image: 65bc0185-7fba-4b08-b256-cfc7576d9dda
                     flavor: m2.large
