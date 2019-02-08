@@ -1,0 +1,27 @@
+heat_template_version: 2018-03-02
+
+description: >
+    Create  VM instances servers for CMS Inner Tracker Phase-II 
+    test beam analysis
+
+resources:
+    group:
+        type: OS::Heat::ResourceGroup
+        properties:
+            count: 3
+            resource_def:
+                type: OS::Nova::Server
+                properties:
+                    name: "cmsit-tba%index%"
+                    key_name: lxplus
+                    image: 65bc0185-7fba-4b08-b256-cfc7576d9dda
+                    flavor: m2.large
+                    metadata: {"cern-services": "true", 
+                        "landb-description":"TEST-BEAM EUDET type dockerized analysis server",
+                        "landb-os": "LINUX",
+                        "landb-mainuser": "CMS-IT-TB-SPS"
+                        }
+                    user_data_format: RAW
+                    user_data:
+                        get_file: user_data_context_mlt.txt
+
