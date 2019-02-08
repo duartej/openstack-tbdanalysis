@@ -1,37 +1,51 @@
 # Openstack virtual machine setup-up: tbdanalysis
-Virtual machine to run EUTelescope analysis code accessing EOS
+Virtual machines to run EUTelescope analysis code accessing EOS
 
-## Instance creation 
+## Instances creation 
 Create the multipart file to be use for the user configuration
 ```bash
 write-mime-multipart -o user_data_context_mlt.txt user_data_ci.txt user_data_bs.txt
 ```
-Create the instance using a CC7 image (so far there is some problem with the instance
-creation using a e-group, workaround in the meantime)
-```bash
-# Create a persistent volume using CC7 image (2018-12-03:65bc0185-7fba-4b08-b256-cfc7576d9dda) 
-# From my personal space (not requested volumes in the project)
-$ openstack volume create --image 65bc0185-7fba-4b08-b256-cfc7576d9dda \
-    --size 80 --description "CC7 analysis software for dockerize test-beam analysis for IT-CMS upgrade" cms-it-tb2 
-#  The volume id is 4ecd9e52-1be1-4cc2-9b43-37989de10f5d
-$ openstack volume transfer request 
-# Create the server  at "CMS IT Ph2 Test Beam Analysis" (project c44e1040-5691-4ea5-881c-eb9a4b4d97e6)
-$ openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 \ 
-    server create --flavor m2.large --key-name lxplus \
-    --volume 4ecd9e52-1be1-4cc2-9b43-37989de10f5d \
-    --property landb-description="TEST-BEAM EUDET type dockerized analysis server" \
-    --property landb-os="LINUX" --property landb-mainuser="CMS-IT-TB-SPS" \ 
-    --user-data user_data_context_mlt.txt tbdanalysis
-# The server ID is  5eedd104-09fb-40d5-8ced-91a0f1873588
-# WORKAROUND: set e-group
-# Re-set the mainuser property, enter in the instance as root and run the /root/post-install.sh script
-$ openstack server set --property landb-mainuser="CMS-IT-TB-SPS" 245f6b7e-b0e6-4871-b151-434c7adc6e29
-$ ssh root@tbdanalysis.cern.ch
-# cd /root/
-# ./post-install.sh
-# reboot
-```
 
+Template file `cmsit_tb_group_stack.yaml` for orchestration:
+```yml
+heat_template_version: 2018-03-02
+  
+description: >
+    Create  VM instances servers for CMS Inner Tracker Phase-II
+    test beam analysis
+
+resources:
+    group:
+        type: OS::Heat::ResourceGroup
+        properties:
+            count: 10
+            resource_def:
+                type: OS::Nova::Server
+                properties:
+                    name: "cmsit-tba0%index%"
+                    key_name: lxplus
+                    image: 65bc0185-7fba-4b08-b256-cfc7576d9dda
+                    flavor: m2.large
+                    metadata: {"cern-services": "true",
+                        "landb-description":"TEST-BEAM EUDET type dockerized analysis server",
+                        "landb-os": "LINUX",
+                        "landb-mainuser": "CMS-IT-TB-SPS"
+                        }
+                    user_data_format: RAW
+                    user_data:
+                        get_file: user_data_context_mlt.txt
+```
+Create the stack of servers (10) using the template in the file `cmsit_tb_group_stack.yaml: 
+```bash
+openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t cmsit_tb_group_stack.yaml cmsit-tb_stack
+```
+A stack of servers named **cmsit-tb0\<ID\>.cern.ch** will be created. Note there is no mechanism to balance the access to 
+the servers so far. 
+(TODO: Incorporate the servers into the puppet configuration mechnism
+
+
+```
 ## Extra configuration
 A new service for the dockerfiles-eutelescope is created for the analysis. 
 The `docker-compose.yml` file is updated with the following service:
