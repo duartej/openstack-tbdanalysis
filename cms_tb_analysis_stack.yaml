@@ -1,0 +1,22 @@
+heat_template_version: rocky
+
+description: >
+    A HOT template trying to set up several VM instances with 
+    the appropiate configuration for the CMS Test beam analysis
+
+resources:
+    server:
+        type: OS::Nova::Server
+        properties:
+            name: "cmsit-tba-01"
+            key_name: lxplus
+            image: 65bc0185-7fba-4b08-b256-cfc7576d9dda
+            flavor: m2.large
+            metadata: {"cern-services": "true", 
+                    "landb-description":"TEST-BEAM EUDET type dockerized analysis server",
+                    "landb-os": "LINUX",
+                    "landb-mainuser": "CMS-IT-TB-SPS"
+                    }
+            user_data:
+                get_file: user_data_context_mlt.txt
+
