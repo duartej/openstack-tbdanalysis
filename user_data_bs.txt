@@ -16,8 +16,8 @@ curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.d
 ##--CVMFS_KEYS_DIR=/etc/cvmfs/keys
 ##--EOF
 ## AFS --> Maybe using locmap?
-#/usr/bin/locmap --configure afs
-#/usr/bin/locmap --configure ntp
+/usr/bin/locmap --configure afs
+/usr/bin/locmap --configure ntp
 
 ## Apply CERN site config. defaults 
 #/usr/bin/locmap --configure all 
@@ -37,6 +37,8 @@ curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.d
 #    (uses all main users instead of the responsible)
 #  - AFS? 
 #  - ...
+# First remove both .k5login and .forward
+rm /root/.k5login /root/.forward
 cern-config-users --setup-root-mail-forward --setup-root-k5login --setup-sudo-access --setup-root-ssh-authorizedkeys --setup-user-accounts
 cern-linuxsupport-access enable
 
