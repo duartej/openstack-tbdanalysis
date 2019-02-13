@@ -16,10 +16,10 @@ resources:
                     key_name: lxplus
                     image: 65bc0185-7fba-4b08-b256-cfc7576d9dda
                     flavor: m2.large
-                    metadata: {"cern-services": "true", 
-                        "landb-description":"TEST-BEAM EUDET type dockerized analysis server",
+                    metadata: {"landb-description":"TEST-BEAM EUDET type dockerized analysis server",
                         "landb-os": "LINUX",
-                        "landb-mainuser": "CMS-IT-TB-SPS"
+                        "landb-mainuser": "CMS-IT-TB-SPS",
+                        "landb-responsible": "duarte"
                         }
                     user_data_format: RAW
                     user_data:
