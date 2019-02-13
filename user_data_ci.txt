@@ -20,6 +20,8 @@ packages:
  - libXmu
  - git
  - cmake3
+ - cern-config-users
+ - cern-linuxsupport-access
  - rng-tools
  - yum-utils
  - device-mapper-persistent-data
@@ -34,7 +36,7 @@ final_message: "The system is finally up, after $UPTIME seconds"
 # --- Create some files: DESY cvmfs software
 # Public key for the desy CVMFS. Just in case does not able to access
 # to the server
-# And other static files for CVMFS and EOS (cms and user)
+# And other static files for CVMFS (desy)
 # And the /root/.k5login file to assure the root access for the maintainer
 # Create the needed messag
 # Plus an addendum to /etc/profile in order to prepare the session

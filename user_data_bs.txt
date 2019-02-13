@@ -20,7 +20,7 @@ curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.d
 #/usr/bin/locmap --configure ntp
 
 ## Apply CERN site config. defaults 
-/usr/bin/locmap --configure all 
+#/usr/bin/locmap --configure all 
 # disable some not needed
 /usr/bin/locmap --disable lpadmin
 
@@ -31,6 +31,14 @@ curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.d
 ## EOS
 /usr/bin/locmap --enable eosclient
 /usr/bin/locmap --configure eosclient
+
+# Fixing some issures with the locmap scripts:
+#  - wrong assignation of the ROOT forward email and k5login as ROOT 
+#    (uses all main users instead of the responsible)
+#  - AFS? 
+#  - ...
+cern-config-users --setup-root-mail-forward --setup-root-k5login --setup-sudo-access --setup-root-ssh-authorizedkeys --setup-user-accounts
+cern-linuxsupport-access enable
 
 # -----------------------------------------------------------------------------
 # User to take care of software installation
@@ -111,4 +119,5 @@ su -s /bin/bash -c "/bin/add_analysis_service /sw/repos/dockerfiles-eutelescope/
 cat /tmp/profile_addendum >> /etc/profile
 rm /tmp/profile_addendum
 
-
+# Update the system
+/usr/bin/yum -y update
