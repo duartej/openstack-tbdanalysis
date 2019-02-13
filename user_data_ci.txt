@@ -164,7 +164,7 @@ write_files:
         with open(compose_file) as f:
             cl = yaml.load(f)
         # Create the analysis service
-        cl['services']['analysis'] = {'depends_on': ['"eutelescope"'], \
+        cl['services']['analysis'] = {'depends_on': ["eutelescope"], \
               'image': 'duartej/eutelescope:latest', 'user': '${ID}:${GROUP}', \
               'volumes': ['/var/run/eosd:/var/run/eosd', \
                    '/tmp/krb5cc_${ID}:/tmp/krb5cc_${ID}', '/afs:/afs', \
