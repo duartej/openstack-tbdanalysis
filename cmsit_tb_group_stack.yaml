@@ -8,7 +8,7 @@ resources:
     group:
         type: OS::Heat::ResourceGroup
         properties:
-            count: 3
+            count: 10
             resource_def:
                 type: OS::Nova::Server
                 properties:
