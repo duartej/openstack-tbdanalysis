@@ -32,16 +32,6 @@ curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.d
 /usr/bin/locmap --enable eosclient
 /usr/bin/locmap --configure eosclient
 
-# Fixing some issures with the locmap scripts:
-#  - wrong assignation of the ROOT forward email and k5login as ROOT 
-#    (uses all main users instead of the responsible)
-#  - AFS? 
-#  - ...
-# First remove both .k5login and .forward
-rm /root/.k5login /root/.forward
-cern-config-users --setup-root-mail-forward --setup-root-k5login --setup-sudo-access --setup-root-ssh-authorizedkeys --setup-user-accounts
-cern-linuxsupport-access enable
-
 # -----------------------------------------------------------------------------
 # User to take care of software installation
 useradd -p analyser -s /sbin/nologin --no-create-home --user-group -u 1000 analyser

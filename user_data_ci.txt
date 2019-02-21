@@ -82,20 +82,40 @@ write_files:
         done
     owner: "root:root"
     permissions: "0700"
+  - path: "/root/.k5login"
+    content: |
+        duarte@CERN.CH
+    owner: "root:root"
+    permissions: "0600"
+  - path: "/root/.forward"
+    content: | 
+        duarte@CERN.CH
+    owner: "root:root"
+    permissions: "0600"
   - path: "/tmp/profile_addendum"
     content: |
         # CREATED from user-data
         # -----------------------
+        # Not allowing to enter with ticket delegation, to avoid problems
+        # with the docker-analysis container
+        if ( "X"$KRB5CCNAME != "X" )
+            echo "********************************************************"
+            echo "Kerberos ticket delegation not allowed!"
+            echo "Connect to this machine using:         "
+            echo "$ ssh -oGSSAPIDelegateCredentials=no ${HOSTNAME}.cern.ch"
+            echo ""
+            echo "EXITING..."
+            echo "********************************************************"
+            exit
+
         # Check if there is a KERBEROS ticket present
         klist -s
-        if [[ $? -ne 0 ]];
-        then
+        if ( $? )
             echo "[CONFIG] Not kerberos ticket present (to activate your AFS area)"
             echo "[CONFIG] Creating ticket"
             echo "kinit ${USER}@CERN.CH"
             kinit ${USER}@CERN.CH
             echo "[CONFIG] AFS area activated"
-        fi
 
         # Associate to the current credentials EOS
         eosfusebind -g
@@ -172,8 +192,7 @@ write_files:
                    {'read_only': True, 'source': '/sw/repos/sps-tb-201806-eutel-cfg', \
                    'type': 'bind', 'target': '/home/eudaquser/sps-tb-201806-eutel-cfg'}, \
                    '/etc/passwd:/etc/passwd'], \
-                'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'], \
-                'privileged': True \
+                'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'] \
             }
         # The compose file modified
         with open(compose_file,"w") as f:
