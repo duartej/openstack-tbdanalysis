@@ -78,14 +78,14 @@ The above command will create a container and give you a terminal inside it. `Ma
 The steering files from the EUTelescope processor can be found in the docker-container at:
 * `/home/eudaquser/sps-tb-201806-eutel-cfg`, but in read only mode
 
-#### Troubleshooting
+## Troubleshooting
 * You don't have access to AFS/EOS in the `cmsit-tba<ID>` machines:
     * Be sure you have your kerberos credentials: `kinit <niceuser>@CERN.CH`
 * You don't have access to EOS in the docker container:
     * Be sure you have created your kerberos credentials, then try to `ls /eos/cms` in the `cmsit-tba<ID`
     machine. If there is no problems, enter into the container and try again
 
-#### References
+## References
 * Puppet-managed VM at CERN: (foreman) https://judy.cern.ch
     * `http://configdocs.web.cern.ch/configdocs`
     * DNS Load balancing (https://aiermis.cern.ch)
