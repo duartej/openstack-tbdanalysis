@@ -119,6 +119,9 @@ write_files:
             echo "kinit ${USER}@CERN.CH"
             kinit ${USER}@CERN.CH
             echo "[CONFIG] AFS area activated"
+            # Be sure to activate the eos as well
+            ls /eos/user/${USER:0:1}/${USER}/ > /dev/null
+            echo "[CONFIG] EOS area activated"
         fi
 
         # Associate to the current credentials EOS
