@@ -73,7 +73,7 @@ docker-analysis
 ```
 The above command will create a container and give you a terminal inside it. `Marlin`,
 `root` and other offline analysis commands are available in there. Again, `/afs` and 
-`/eos` (`eos` in read-only mode) are available, as well. 
+`/eos` folders  are available, as well. 
 
 The steering files from the EUTelescope processor can be found in the docker-container at:
 * `/home/eudaquser/sps-tb-201806-eutel-cfg`, but in read only mode

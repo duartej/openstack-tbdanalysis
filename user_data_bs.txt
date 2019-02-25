@@ -113,14 +113,3 @@ rm /tmp/profile_addendum
 
 # Update the system
 /usr/bin/yum -y update
-
-# Fixing responsible user:
-cat > /root/.forward << EOF
-jorge.duarte.campderros@cern.ch
-EOF
-cat > /root/.k5login << EOF
-duarte@CERN.CH
-EOF
-
-chmod 0600 /root/.forward 
-chmod 0600 /root/.k5login
