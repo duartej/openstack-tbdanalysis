@@ -21,7 +21,6 @@ packages:
  - git
  - cmake3
  - cern-config-users
- - cern-linuxsupport-access
  - rng-tools
  - yum-utils
  - device-mapper-persistent-data

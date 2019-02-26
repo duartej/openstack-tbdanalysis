@@ -4,6 +4,9 @@
 # [ See https://clouddocs.web.cern.ch/clouddocs/advanced_topics/entropy.html ]
 systemctl start rngd
 
+# De-install the problematic package
+yum remove -y cern-private-cloud-addons
+
 # -- get public key from desy
 # -- Check if server available, otherwise just used the included key at
 #    config time
@@ -75,7 +78,7 @@ source setup.sh
 # -- EUTelescope and EUDAQ compilation
 # Create the network if not
 cd /sw/repos/dockerfiles-eudaqv1
-docker-compoSe run --rm -d devcode
+docker-compose run --rm -d devcode
 namec=$(docker ps -a -q -l)
 docker container stop \$namec && docker container rm \$namec
 # And now setup the eutelescope container
