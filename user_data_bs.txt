@@ -23,7 +23,7 @@ curl -o /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.de.
 /usr/bin/locmap --configure ntp
 
 ## Apply CERN site config. defaults 
-#/usr/bin/locmap --configure all 
+/usr/bin/locmap --configure all 
 # disable some not needed
 /usr/bin/locmap --disable lpadmin
 
