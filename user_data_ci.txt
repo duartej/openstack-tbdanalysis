@@ -207,10 +207,3 @@ write_files:
 
     owner: "root:root"
     permissions: "0755"
-
-### Try to overcome problems with the locmap 
-### assigning wrong permisions
-runcmd:
-  - [ rm, /root/.forward ]
-  - [ cern-config-users,--setup-root-k5login,--setup-sudo-access,--setup-root-mail-forward ]
-

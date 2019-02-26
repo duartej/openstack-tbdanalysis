@@ -7,7 +7,7 @@ systemctl start rngd
 # -- get public key from desy
 # -- Check if server available, otherwise just used the included key at
 #    config time
-curl -o h /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.de.pub
+curl -o /etc/cvmfs/keys/desy.de.pub https://grid.desy.de/etc/cvmfs/keys/desy.de.pub
 
 # And the config?
 ##--cat > /etc/cvmfs/domain.d/desy.de.conf <<EOF 
@@ -75,7 +75,8 @@ source setup.sh
 # -- EUTelescope and EUDAQ compilation
 # Create the network if not
 cd /sw/repos/dockerfiles-eudaqv1
-namec=\$(docker-compose run --rm -d devcode)
+docker-compoSe run --rm -d devcode
+namec=$(docker ps -a -q -l)
 docker container stop \$namec && docker container rm \$namec
 # And now setup the eutelescope container
 cd /sw/repos/dockerfiles-eutelescope
@@ -113,3 +114,7 @@ rm /tmp/profile_addendum
 
 # Update the system
 /usr/bin/yum -y update
+
+rm /root/.forward
+rm /root/.k5login
+cern-config-users --setup-root-k5login --setup-sudo-access --setup-root-mail-forward
