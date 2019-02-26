@@ -118,6 +118,9 @@ rm /tmp/profile_addendum
 # Update the system
 /usr/bin/yum -y update
 
+# Remove leftovers of the locmap --configure all, containing wrong assignation
+# to admin privileges
+rm /etc/sudoers.d/*
 rm /root/.forward
 rm /root/.k5login
 cern-config-users --setup-root-k5login --setup-sudo-access --setup-root-mail-forward
