@@ -113,14 +113,26 @@ write_files:
         klist -s
         if [[ $? -ne 0 ]];
         then
-            echo "[CONFIG] Not kerberos ticket present (to activate your AFS area)"
-            echo "[CONFIG] Creating ticket"
+            echo -e "[\033[1;33mCONFIG\033[1;m] Not kerberos ticket present (to activate your AFS area)"
+            echo -e "[\033[1;32mCONFIG\033[1;m] Creating ticket"
             echo "kinit ${USER}@CERN.CH"
             kinit ${USER}@CERN.CH
-            echo "[CONFIG] AFS area activated"
+            echo -e "[\033[1;33mCONFIG\033[1;m] AFS area activated"
             # Be sure to activate the eos as well
-            ls /eos/user/${USER:0:1}/${USER}/ > /dev/null
-            echo "[CONFIG] EOS area activated"
+            ITER="0"
+            EOSON="1"
+            while [ $EOSON -ne 0 ] && [ $ITER -lt 4 ]
+            do
+               ls /eos/user/${USER:0:1}/${USER}/ &> /dev/null
+               EOSON=`echo $?`
+               ITER=$[$ITER+1]
+            done
+            if [ $EOSON -ne 0 ];
+            then
+                echo -e "[\033[1;31mCONFIG\033[1;m] PROBLEMS activating EOS. Try to exit and re-connect"
+            else
+                echo -e "[\033[1;32mCONFIG\033[1;m] EOS area activated"
+            fi
         fi
 
         # Associate to the current credentials EOS
