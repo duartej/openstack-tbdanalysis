@@ -1,4 +1,4 @@
-# Openstack virtual machine setup-up: cmssit-tb
+# Openstack virtual machine setup-up: cmsit-tb
 Virtual machines to run EUTelescope analysis code accessing Test beam EOS data
 
 ## Instances creation 
@@ -84,6 +84,14 @@ The steering files from the EUTelescope processor can be found in the docker-con
 * You don't have access to EOS in the docker container:
     * Be sure you have created your kerberos credentials, then try to `ls /eos/cms` in the `cmsit-tba<ID`
     machine. If there is no problems, enter into the container and try again
+
+## Deployment 
+Central changes in the [eudaq](https://github.com/duartej/eudaq) or 
+[eutelescope](https://github.com/duartej/eutelescope) codes, shall be 
+propagated first to the dockerhub images and after that to the analysis
+machines. The quick and safest way is by destroying and re-creating the stack, once
+the dockerhub contain the newly build images.
+
 
 ## References
 * Puppet-managed VM at CERN: (foreman) https://judy.cern.ch
