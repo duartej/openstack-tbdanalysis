@@ -38,7 +38,7 @@ resources:
 ```
 Create the stack of servers (10) using the template in the file `cmsit_tb_group_stack.yaml`: 
 ```bash
-openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t cmsit_tb_group_stack.yaml cmsit-tb_stack
+openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t cmsit_tb_group_stack.yaml cmsit-tba
 ```
 A stack of servers named **cmsit-tb0\<ID\>.cern.ch** will be created. Note there is no mechanism to balance the access to 
 the servers so far. 
@@ -82,7 +82,7 @@ The steering files from the EUTelescope processor can be found in the docker-con
 * You don't have access to AFS/EOS in the `cmsit-tba<ID>` machines:
     * Be sure you have your kerberos credentials: `kinit <niceuser>@CERN.CH`
 * You don't have access to EOS in the docker container:
-    * Be sure you have created your kerberos credentials, then try to `ls /eos/cms` in the `cmsit-tba<ID`
+    * Be sure you have created your kerberos credentials, then try to `ls /eos/cms` in the `cmsit-tba<ID>`
     machine. If there is no problems, enter into the container and try again
 
 ## Deployment 
