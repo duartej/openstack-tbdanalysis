@@ -25,6 +25,7 @@ packages:
  - yum-utils
  - device-mapper-persistent-data
  - lvm2
+ - screen
 
 # final_message
 # default: cloud-init boot finished at $TIMESTAMP. Up $UPTIME seconds
@@ -117,7 +118,7 @@ write_files:
             echo -e "[\033[1;32mCONFIG\033[1;m] Creating ticket"
             echo "kinit ${USER}@CERN.CH"
             kinit ${USER}@CERN.CH
-            echo -e "[\033[1;33mCONFIG\033[1;m] AFS area activated"
+            echo -e "[\033[1;32mCONFIG\033[1;m] AFS area activated"
             # Be sure to activate the eos as well
             ITER="0"
             EOSON="1"

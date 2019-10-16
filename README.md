@@ -86,11 +86,51 @@ The steering files from the EUTelescope processor can be found in the docker-con
     machine. If there is no problems, enter into the container and try again
 
 ## Deployment 
-Central changes in the [eudaq](https://github.com/duartej/eudaq) or 
-[eutelescope](https://github.com/duartej/eutelescope) codes, shall be 
-propagated first to the dockerhub images and after that to the analysis
-machines. The quick and safest way is by destroying and re-creating the stack, once
-the dockerhub contain the newly build images.
+
+Every time any of the main codes and configuration elements are modified,
+the stack should be reinitialized. The easy, less error-prone way to do it,
+is by destroying and re-creating the stack. 
+The main codes are: 
+ * [eudaq](https://github.com/duartej/eudaq), with the relevant docker image at
+ [dockerhub:eudaq](https://cloud.docker.com/u/duartej/repository/docker/duartej/eudaqv1-ubuntu)
+ * [eutelescope](https://github.com/duartej/eutelescope), with the relevant docker image at
+ [dockerhub:eutelescope](https://cloud.docker.com/u/duartej/repository/docker/duartej/eudaqv1-ubuntu)
+Note that before creating the new stack, the software code changes should be propagated to the
+dockerhub images.
+
+And the main configuration elements:
+ * [user_data_bs.txt](https://github.com/duartej/openstack-tbdanalysis/blob/master/user_data_bs.txt): 
+ user configuration, blablah
+ * [user_data_ci.txt](https://github.com/duartej/openstack-tbdanalysis/blob/master/user_data_ci.txt):
+ user configuration, blahblah
+ * [cmsit_tb_group_stack](https://github.com/duartej/openstack-tbdanalysis/blob/master/cmsit_tb_group_stack.yaml):
+ The description file to create the stack. 
+
+The list of commands to destroy and create again the stack are described
+below. The `openstack` commands are available at `lxplus-cloud.cern.ch`.
+
+#### Obtain the project id to be used with `--os-project-id` 
+```bash
+$ openstack project list
+```
+
+### Destroy the stack
+```bash
+# First get the stack id
+$ openstack --os-project-id <PROJECTID> stack list
+# Then delete them
+$ openstack --os-project-id <PROJECTID> stack delete <STACKID>
+```
+Wait until the vm instances are actually destroyed and all the resources freed.
+
+### Create the stack
+Before create the stack, and if needed, create the multipart file 
+```bash
+# Create the multipart config file
+write-mime-multipart -o user_data_context_mlt.txt user_data_ci.txt user_data_bs.txt
+# Create the stack
+openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t cmsit_tb_group_stack.yaml cmsit-tba
+```
 
 
 ## References
