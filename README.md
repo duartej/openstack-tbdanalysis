@@ -132,6 +132,25 @@ write-mime-multipart -o user_data_context_mlt.txt user_data_ci.txt user_data_bs.
 openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t cmsit_tb_group_stack.yaml cmsit-tba
 ```
 
+## Maintenance and developement
+* Repositories updates within the `/sw/repos` file. Use the `analyser` user (no login):
+```bash
+$ Just sudo /bin/bash first
+# cd /sw/repos/<repo_to_update>
+# su -s /bin/bash -c 'git pull' analyser
+```
+* Analysis software: use of software developement versions. 
+The `docker-analysis` alias creates a container defined at `/sw/repos/dockerfiles-eutelescope/docker-compose.yml`. The container uses the eudaq and eutelescope softwares from the pre-built image. In order to use explicitely eudaq software from the host. 
+  * EUDAQ software from the host
+  ```bash
+  $ cd /sw/repos/dockerfiles-eutelescope
+  $ # To compile EUTElescope using EUDAQ from the host, and let the compiled objects at the host (which could be use afterwards
+  $ docker-compose run --rm compile
+  $ # To used the host compiled EUDAQ with the EUTelescope image
+  $ docker-compose run --rm devcode
+  $ # To used the host compiled EUDAQ with the EUTelescope image, privileged mode, able to be used with the TLU
+  $ docker-compose run --rm devcode
+  ```
 
 ## References
 * Puppet-managed VM at CERN: (foreman) https://judy.cern.ch
