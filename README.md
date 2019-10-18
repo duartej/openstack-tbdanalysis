@@ -135,22 +135,47 @@ openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t c
 ## Maintenance and developement
 * Repositories updates within the `/sw/repos` file. Use the `analyser` user (no login):
 ```bash
-$ Just sudo /bin/bash first
-# cd /sw/repos/<repo_to_update>
-# su -s /bin/bash -c 'git pull' analyser
+# Just sudo /bin/bash first
+[root] cd /sw/repos/<repo_to_update>
+[root] su -s /bin/bash -c 'git pull' analyser
 ```
 * Analysis software: use of software developement versions. 
 The `docker-analysis` alias creates a container defined at `/sw/repos/dockerfiles-eutelescope/docker-compose.yml`. The container uses the eudaq and eutelescope softwares from the pre-built image. In order to use explicitely eudaq software from the host. 
-  * EUDAQ software from the host
+  * USe the EUDAQ software from the host
   ```bash
   $ cd /sw/repos/dockerfiles-eutelescope
-  $ # To compile EUTElescope using EUDAQ from the host, and let the compiled objects at the host (which could be use afterwards
+  # To compile EUTElescope using EUDAQ from the host, and let the compiled objects at the host (which could be use afterwards
   $ docker-compose run --rm compile
-  $ # To used the host compiled EUDAQ with the EUTelescope image
+  # To used the host compiled EUDAQ with the EUTelescope image
   $ docker-compose run --rm devcode
-  $ # To used the host compiled EUDAQ with the EUTelescope image, privileged mode, able to be used with the TLU
+  # To used the host compiled EUDAQ with the EUTelescope image, privileged mode, able to be used with the TLU
   $ docker-compose run --rm devcode
   ```
+  * EUTelescope development. In order to develop and test the EUTelescope code in the container, several steps are needed to dump the repo to the host and then be able to write code (in the host), compile (in the container) and use it (in the container). 
+  ```bash
+  # Edit the docker-compose.override.yml file to include the binding of the host directory to the container
+  $ sudo /bin/bash
+  [root] su -s /bin/bash -c 'vim docker-compose.override.yml' analyser
+  ```
+  Add the bind volume in the `devcode` section of the yaml file:
+  ```yaml
+  - type: bind
+    source: /sw/repos/Eutelescope
+    target: /eudaq/ilcsoft/v01-19-02/Eutelescope/
+  ```
+  Get an previous eutelescope container or create a new one, without deleting it: 
+  ```bash
+  # Back as regular user
+  [root] exit
+  $ docker container ps -a
+  # If no container, create one and exit
+  $ docker run devcode
+  # Entering again as superuser and copy the container eutelescope software into the host
+  [root] su -s /bin/bash -c 'docker cp 7c252d34dbf2:/eudaq/ilcsoft/v01-19-02/Eutelescope/ /sw/repos/' analyser
+  # Exit superuser and lauch the devcode service:
+  $ docker-compose run --rm devcode
+  ```
+
 
 ## References
 * Puppet-managed VM at CERN: (foreman) https://judy.cern.ch
