@@ -150,7 +150,7 @@ openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t c
 ```
 * Analysis software: use of software developement versions. 
 The `docker-analysis` alias creates a container defined at `/sw/repos/dockerfiles-eutelescope/docker-compose.yml`. The container uses the eudaq and eutelescope softwares from the pre-built image. In order to use explicitely eudaq software from the host. 
-  * USe the EUDAQ software from the host
+  * Use the **EUDAQ software from the host**
   ```bash
   $ cd /sw/repos/dockerfiles-eutelescope
   # To compile EUTElescope using EUDAQ from the host, and let the compiled objects at the host (which could be use afterwards
@@ -160,7 +160,7 @@ The `docker-analysis` alias creates a container defined at `/sw/repos/dockerfile
   # To used the host compiled EUDAQ with the EUTelescope image, privileged mode, able to be used with the TLU
   $ docker-compose run --rm devcode
   ```
-  * EUTelescope development. In order to develop and test the EUTelescope code in the container, several steps are needed to dump the repo to the host and then be able to write code (in the host), compile (in the container) and use it (in the container). 
+  * **EUTelescope development**. In order to develop and test the EUTelescope code in the container, several steps are needed to dump the repo to the host and then be able to write code (in the host), compile (in the container) and use it (in the container). 
   ```bash
   # Edit the docker-compose.override.yml file to include the binding of the host directory to the container
   $ sudo /bin/bash
@@ -184,7 +184,11 @@ The `docker-analysis` alias creates a container defined at `/sw/repos/dockerfile
   # Exit superuser and lauch the devcode service:
   $ docker-compose run --rm devcode
   ```
-
+  Remember to edit the source files on the host using the `analyser` user:
+  ```bash
+  su -s /bin/bash -c 'vim master/processors/src/EUTelAPIXTbTrackTuple.cc' analyser
+  ```
+  You must use a different container to run (`analysis` modified with the binded mounted src folder) than to compile.
 
 ## References
 * Puppet-managed VM at CERN: (foreman) https://judy.cern.ch
