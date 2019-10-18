@@ -1,6 +1,15 @@
 # Openstack virtual machine setup-up: cmsit-tb
 Virtual machines to run EUTelescope analysis code accessing Test beam EOS data
 
+##### Table of Contents  
+1. [Instances creation](#instances-creation)
+2. [Usage instructions](#usage-instructions)
+3. [Troubleshooting](#troubleshooting)
+4. [Deployment](#deployment)
+5. [Maintenance & Development](#maintenance-and-development)
+
+
+
 ## Instances creation 
 Create the multipart file to be used for the user configuration:
 ```bash
@@ -132,7 +141,7 @@ write-mime-multipart -o user_data_context_mlt.txt user_data_ci.txt user_data_bs.
 openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t cmsit_tb_group_stack.yaml cmsit-tba
 ```
 
-## Maintenance and developement
+## Maintenance and development
 * Repositories updates within the `/sw/repos` file. Use the `analyser` user (no login):
 ```bash
 # Just sudo /bin/bash first
