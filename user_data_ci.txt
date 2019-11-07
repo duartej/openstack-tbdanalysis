@@ -210,6 +210,8 @@ write_files:
                    {'read_only': True, 'source': '/eos', 'type': 'bind', 'target': '/eos'}, \
                    {'read_only': True, 'source': '/sw/repos/sps-tb-201806-eutel-cfg', \
                    'type': 'bind', 'target': '/home/eudaquser/sps-tb-201806-eutel-cfg'}, \
+                   {'read_only': True, 'source': '/sw/repos/tele-scope', \
+                   'type': 'bind', 'target': '/eudaq/tele-scope'}, \
                    '/etc/passwd:/etc/passwd'], \
                 'environment' : ['KRB5CCNAME=/tmp/krb5cc_${ID}','AFSUSER=${USER}'] \
             }

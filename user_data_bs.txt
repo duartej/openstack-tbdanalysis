@@ -90,6 +90,12 @@ docker-compose run --rm compile
 # --- The eutelescope configuration
 cd /sw/repos 
 git clone https://gitlab.cern.ch/sifca/sps-tb-201806-eutel-cfg.git
+# -- The Pitzl's software for DESY analysis: tele-scope
+cd /sw/repos
+git clone https://github.com/duartej/tele-scope.git
+cd tele-scope
+# The proper compilation
+docker run --mount type=bind,source=/sw/repos/eudaq,target=/eudaq/eudaq,readonly --mount type=bind,source=/sw/repos/tele-scope,target=/eudaq/tele-scope --name telescope_compilation --rm --entrypoint "/bin/bash" duartej/eutelescope:latest -c 'cd /eudaq/tele-scope && make tele'
 EOF
 chmod a+w /sw/swinstall.sh
 chown analyser:analyser /sw/swinstall.sh 
