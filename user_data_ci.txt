@@ -158,6 +158,7 @@ write_files:
             export TB2018CERN08=${POOL_DATA}/20180829-CERN_SPS-H2
             export TB2018CERN1003=${POOL_DATA}/20181003-CERN_SPS-H6B
             export TB2018CERN1024=${POOL_DATA}/20181024-CERN_SPS-H6B
+            export TB2019DESY10=${POOL_DATA}/20191028-DESY-TB21
             export DOCKERPATH=/sw/repos/dockerfiles-eutelescope
             cd $HOME
             echo 
@@ -180,6 +181,7 @@ write_files:
             echo '   | SPS CERN Aug-Sept 2018: TB2018CERN08'
             echo '   | SPS CERN Oct03 2018:    TB2018CERN1003'
             echo '   | SPS CERN Oct24 2018:    TB2018CERN1024'
+            echo '   | DESY Oct. 28 2019:      TB2019DESY10'
             echo '* Marlin framework reconstruction: Test beam data with' 
             echo '  track reconstruction. Efficiencies and charge maps'
             echo '* Starting the Docker analysis container:'
