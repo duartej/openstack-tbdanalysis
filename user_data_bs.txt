@@ -95,7 +95,7 @@ cd /sw/repos
 git clone https://github.com/duartej/tele-scope.git
 cd tele-scope
 # The proper compilation
-docker run --mount type=bind,source=/sw/repos/eudaq,target=/eudaq/eudaq,readonly --mount type=bind,source=/sw/repos/tele-scope,target=/eudaq/tele-scope --name telescope_compilation --rm --entrypoint "/bin/bash" duartej/eutelescope:latest -c 'cd /eudaq/tele-scope && make tele'
+docker run --mount type=bind,source=/sw/repos/eudaq,target=/eudaq/eudaq,readonly --mount type=bind,source=/sw/repos/tele-scope,target=/eudaq/tele-scope --name telescope_compilation --rm --entrypoint "/bin/bash" duartej/eutelescope:latest -c 'cd /eudaq/tele-scope && make tele && make scope53m'
 EOF
 chmod a+w /sw/swinstall.sh
 chown analyser:analyser /sw/swinstall.sh 
