@@ -34,9 +34,10 @@ packages:
 # output to the console
 # - runcmd only runs during the first boot
 # Trying to  fix the lack of dependencies of th EOS packages
-runcmd:
- - locmap --enable eosclient
- - locmap --configure eosclient
+## Doesn't work
+## runcmd:
+##  - locmap --enable eosclient
+##  - locmap --configure eosclient
 
 # final_message
 # default: cloud-init boot finished at $TIMESTAMP. Up $UPTIME seconds
