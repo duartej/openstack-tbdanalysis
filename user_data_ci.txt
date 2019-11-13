@@ -27,6 +27,16 @@ packages:
  - lvm2
  - screen
 
+# run commands
+# 
+# runcmd contains a list of either lists or a string
+# each item will be executed in order at rc.local like level with
+# output to the console
+# - runcmd only runs during the first boot
+# Trying to  fix the lack of dependencies of th EOS packages
+runcmd:
+ - locmap --configure eosclient
+
 # final_message
 # default: cloud-init boot finished at $TIMESTAMP. Up $UPTIME seconds
 # this message is written by cloud-final when the system is finished
