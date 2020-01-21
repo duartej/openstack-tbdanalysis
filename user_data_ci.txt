@@ -115,7 +115,7 @@ write_files:
             echo "********************************************************"
             echo "Kerberos ticket delegation not allowed!"
             echo "Connect to this machine using:         "
-            echo "$ ssh -oGSSAPIDelegateCredentials=no ${HOSTNAME}.cern.ch"
+            echo "$ ssh -oGSSAPIDelegateCredentials=no ${HOSTNAME}"
             echo ""
             echo "EXITING..."
             echo "********************************************************"
