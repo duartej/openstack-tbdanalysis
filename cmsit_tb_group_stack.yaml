@@ -14,7 +14,7 @@ resources:
                 properties:
                     name: "cmsit-tba0%index%"
                     key_name: lxplus
-                    image: 65bc0185-7fba-4b08-b256-cfc7576d9dda
+                    image: 8d4646d6-0f8e-4118-bc04-81192c365e78
                     flavor: m2.large
                     metadata: {"landb-description":"TEST-BEAM EUDET type dockerized analysis server",
                         "landb-os": "LINUX",
