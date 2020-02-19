@@ -142,6 +142,13 @@ openstack --os-project-id c44e1040-5691-4ea5-881c-eb9a4b4d97e6 stack create -t c
 ```
 
 ## Maintenance and development
+* User update (until a more smart mechanism is introduced, puppet for instance): 
+```bash
+# As superuser, first add the user
+> cern-config-users --setup-user-accounts 
+# Update the docker group with the new user, just run in the superuser home:
+> ./post-install.sh
+```
 * Repositories updates within the `/sw/repos` file. Use the `analyser` user (no login):
 ```bash
 # Just sudo /bin/bash first
